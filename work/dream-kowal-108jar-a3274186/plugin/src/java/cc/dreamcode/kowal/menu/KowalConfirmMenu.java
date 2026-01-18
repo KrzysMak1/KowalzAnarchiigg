@@ -26,6 +26,8 @@ import cc.dreamcode.kowal.config.PluginConfig;
 import cc.dreamcode.kowal.KowalPlugin;
 import cc.dreamcode.menu.adventure.setup.BukkitMenuPlayerSetup;
 import cc.dreamcode.kowal.util.UpgradeUtil;
+import java.util.Locale;
+import org.bukkit.Sound;
 
 public class KowalConfirmMenu implements BukkitMenuPlayerSetup
 {
@@ -81,11 +83,11 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
         final int newLevel = success ? (currentLevel + 1) : (currentLevel - 1);
         if (success) {
             this.messageConfig.upgradeSuccess.send((CommandSender)clicked);
-            clicked.playSound(clicked.getLocation(), this.pluginConfig.upgradeSuccess, 1.0f, 1.0f);
+            this.playConfiguredSound(clicked, this.pluginConfig.upgradeSuccess);
         }
         else {
             this.messageConfig.upgradeFailure.send((CommandSender)clicked);
-            clicked.playSound(clicked.getLocation(), this.pluginConfig.upgradeFailure, 1.0f, 1.0f);
+            this.playConfiguredSound(clicked, this.pluginConfig.upgradeFailure);
         }
         if (this.mode.equals((Object)KowalMenuMode.KAMIEN_KOWALSKI)) {
             clicked.getInventory().removeItem(new ItemStack[] { ItemBuilder.of(this.pluginConfig.kamienKowalski).setAmount(1).fixColors().toItemStack() });
@@ -126,6 +128,37 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
     private void removeItems(final Player player) {
         this.pluginHookManager.get(VaultHook.class).map(vaultHook -> vaultHook.withdraw(player, this.level.getMoneyUpgrade()));
         this.level.getUpgradeItems().forEach((item, amount) -> player.getInventory().removeItem(new ItemStack[] { new ItemStack(item, (int)amount) }));
+    }
+
+    private void playConfiguredSound(final Player player, final String soundKey) {
+        if (soundKey == null || soundKey.isBlank()) {
+            return;
+        }
+        try {
+            final Sound sound = Sound.valueOf(soundKey);
+            player.playSound(player.getLocation(), sound, 1.0f, 1.0f);
+            return;
+        }
+        catch (IllegalArgumentException ignored) {
+        }
+        final String normalized = normalizeSoundKey(soundKey);
+        try {
+            player.playSound(player.getLocation(), normalized, 1.0f, 1.0f);
+        }
+        catch (RuntimeException ex) {
+            this.plugin.getLogger().warning("Invalid sound key: " + soundKey + " (normalized: " + normalized + ")");
+        }
+    }
+
+    private static String normalizeSoundKey(final String soundKey) {
+        final String trimmed = soundKey.trim();
+        if (trimmed.contains(":")) {
+            final String[] parts = trimmed.split(":", 2);
+            final String namespace = parts[0].toLowerCase(Locale.ROOT);
+            final String path = parts[1].toLowerCase(Locale.ROOT).replace('_', '.');
+            return namespace + ":" + path;
+        }
+        return trimmed.toLowerCase(Locale.ROOT).replace('_', '.');
     }
     
     @Inject
