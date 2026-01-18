@@ -71,8 +71,8 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
         }
         this.removeItems(clicked);
         final ItemStack hand = clicked.getInventory().getItemInMainHand();
-        final String levelString = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, hand, "upgrade-level").orElse("0");
-        final int currentLevel = UpgradeUtil.parseLevel(levelString);
+        final Object levelValue = ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, hand, "upgrade-level").orElse("0");
+        final int currentLevel = UpgradeUtil.parseLevel(levelValue);
         if (this.pluginConfig.kowalItems == null || !this.pluginConfig.kowalItems.containsKey((Object)hand.getType())) {
             return;
         }
@@ -115,7 +115,12 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
         else {
             newItem.fixColors(Map.of("level", newLevel));
         }
-        clicked.getInventory().setItemInMainHand(newItem.toItemStack());
+        final ItemStack upgradedItem = newItem.toItemStack();
+        ItemNbtUtil.setValue((Plugin)this.plugin, upgradedItem, "upgrade-level", String.valueOf(newLevel));
+        if (newLevel < 7) {
+            ItemNbtUtil.setValue((Plugin)this.plugin, upgradedItem, "upgrade-effect", "none");
+        }
+        clicked.getInventory().setItemInMainHand(upgradedItem);
     }
     
     private void removeItems(final Player player) {
