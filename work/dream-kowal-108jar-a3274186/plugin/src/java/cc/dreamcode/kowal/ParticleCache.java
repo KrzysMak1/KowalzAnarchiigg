@@ -50,8 +50,8 @@ public class ParticleCache
             if (!this.pluginConfig.kowalItems.containsKey(armor.getType())) {
                 return false;
             }
-            final String levelString = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, armor, "upgrade-level").orElse("0");
-            final int currentLevel = UpgradeUtil.parseLevel(levelString);
+            final Object levelValue = ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, armor, "upgrade-level").orElse("0");
+            final int currentLevel = UpgradeUtil.parseLevel(levelValue);
             if (currentLevel < level) {
                 return false;
             }

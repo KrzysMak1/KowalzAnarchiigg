@@ -38,9 +38,9 @@ public class DamageController implements Listener
             if (armor == null) {
                 continue;
             }
-            final String levelString = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, armor, "upgrade-level").orElse("0");
+            final Object levelValue = ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, armor, "upgrade-level").orElse("0");
             final String upgrade = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, armor, "upgrade-effect").orElse("none");
-            final int currentLevel = UpgradeUtil.parseLevel(levelString);
+            final int currentLevel = UpgradeUtil.parseLevel(levelValue);
             if (currentLevel >= 1 && this.pluginConfig.kowalLevels != null) {
                 final Level level = (Level)this.pluginConfig.kowalLevels.get((Object)currentLevel);
                 if (level != null) {

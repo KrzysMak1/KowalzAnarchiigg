@@ -47,8 +47,8 @@ public class KowalMenu implements BukkitMenuPlayerSetup
         final BukkitMenu bukkitMenu = builder.buildEmpty();
         bukkitMenu.setDisposeWhenClose(true);
         final ItemStack hand = humanEntity.getInventory().getItemInMainHand();
-        final String levelString = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, hand, "upgrade-level").orElse("0");
-        final int currentLevel = UpgradeUtil.parseLevel(levelString);
+        final Object levelValue = ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, hand, "upgrade-level").orElse("0");
+        final int currentLevel = UpgradeUtil.parseLevel(levelValue);
         if (hand.getType().equals((Object)Material.AIR) || this.pluginConfig.kowalItems == null || !this.pluginConfig.kowalItems.containsKey((Object)hand.getType()) || currentLevel >= 7) {
             bukkitMenu.setItem(this.pluginConfig.upgradeItemSlot, ItemBuilder.of(this.pluginConfig.notUpgradeable).fixColors().toItemStack());
             return bukkitMenu;
