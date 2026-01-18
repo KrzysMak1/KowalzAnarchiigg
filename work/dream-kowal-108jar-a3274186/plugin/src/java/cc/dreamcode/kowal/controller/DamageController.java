@@ -4,7 +4,6 @@ import cc.dreamcode.kowal.effect.Effect;
 import cc.dreamcode.kowal.effect.EffectType;
 import cc.dreamcode.kowal.level.Level;
 import org.bukkit.plugin.Plugin;
-import cc.dreamcode.utilities.bukkit.nbt.ItemNbtUtil;
 import org.bukkit.inventory.ItemStack;
 import lombok.Generated;
 import eu.okaeri.injector.annotation.Inject;
@@ -17,7 +16,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import cc.dreamcode.kowal.config.MessageConfig;
 import cc.dreamcode.kowal.config.PluginConfig;
 import cc.dreamcode.kowal.KowalPlugin;
-import cc.dreamcode.kowal.util.UpgradeUtil;
+import cc.dreamcode.kowal.util.UpgradeDataUtil;
 import org.bukkit.event.Listener;
 
 public class DamageController implements Listener
@@ -38,9 +37,8 @@ public class DamageController implements Listener
             if (armor == null) {
                 continue;
             }
-            final String levelString = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, armor, "upgrade-level").orElse("0");
-            final String upgrade = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, armor, "upgrade-effect").orElse("none");
-            final int currentLevel = UpgradeUtil.parseLevel(levelString);
+            final int currentLevel = UpgradeDataUtil.getLevel((Plugin)this.plugin, armor);
+            final String upgrade = UpgradeDataUtil.getEffect((Plugin)this.plugin, armor);
             if (currentLevel >= 1 && this.pluginConfig.kowalLevels != null) {
                 final Level level = (Level)this.pluginConfig.kowalLevels.get((Object)currentLevel);
                 if (level != null) {

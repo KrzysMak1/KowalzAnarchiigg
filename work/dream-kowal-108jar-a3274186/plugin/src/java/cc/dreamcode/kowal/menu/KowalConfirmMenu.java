@@ -9,7 +9,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.command.CommandSender;
 import cc.dreamcode.utilities.RandomUtil;
 import org.bukkit.plugin.Plugin;
-import cc.dreamcode.utilities.bukkit.nbt.ItemNbtUtil;
 import cc.dreamcode.menu.adventure.BukkitMenuBuilder;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import java.util.function.Consumer;
@@ -25,7 +24,7 @@ import cc.dreamcode.kowal.config.MessageConfig;
 import cc.dreamcode.kowal.config.PluginConfig;
 import cc.dreamcode.kowal.KowalPlugin;
 import cc.dreamcode.menu.adventure.setup.BukkitMenuPlayerSetup;
-import cc.dreamcode.kowal.util.UpgradeUtil;
+import cc.dreamcode.kowal.util.UpgradeDataUtil;
 
 public class KowalConfirmMenu implements BukkitMenuPlayerSetup
 {
@@ -71,12 +70,11 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
         }
         this.removeItems(clicked);
         final ItemStack hand = clicked.getInventory().getItemInMainHand();
-        final String levelString = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, hand, "upgrade-level").orElse("0");
-        final int currentLevel = UpgradeUtil.parseLevel(levelString);
+        final int currentLevel = UpgradeDataUtil.getLevel((Plugin)this.plugin, hand);
         if (this.pluginConfig.kowalItems == null || !this.pluginConfig.kowalItems.containsKey((Object)hand.getType())) {
             return;
         }
-        final String displayName = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, hand, "display-name").orElse(this.pluginConfig.kowalItems.get((Object)hand.getType()));
+        final String displayName = (String)UpgradeDataUtil.getDisplayName((Plugin)this.plugin, hand).orElse(this.pluginConfig.kowalItems.get((Object)hand.getType()));
         final boolean success = RandomUtil.chance(this.level.getChance());
         final int newLevel = success ? (currentLevel + 1) : (currentLevel - 1);
         if (success) {
@@ -103,19 +101,24 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
         if (newLevel == 0) {
             newItemName = colorSuffix.isEmpty() ? displayName : newItemName.substring(0, newItemName.length() - colorSuffix.length());
         }
-        final ItemBuilder newItem = ItemBuilder.of(hand).setName(newItemName).setLore(success ? currentLore : previousLore).withNbt((Plugin)this.plugin, "upgrade-level", String.valueOf(newLevel));
-        if (newLevel >= 7) {
+        final ItemBuilder newItem = ItemBuilder.of(hand).setName(newItemName).setLore(success ? currentLore : previousLore);
+        String selectedEffect = "none";
+        if (newLevel >= 7 && this.pluginConfig.effects != null) {
             final EffectType[] effects = EffectType.values();
             final EffectType random = effects[RandomUtil.nextInteger(effects.length)];
-            final Effect randomEffect = (this.pluginConfig.effects != null) ? (Effect)this.pluginConfig.effects.get((Object)random) : null;
+            final Effect randomEffect = (Effect)this.pluginConfig.effects.get((Object)random);
             if (randomEffect != null) {
-                newItem.withNbt((Plugin)this.plugin, "upgrade-effect", random.getData()).appendLore(randomEffect.getLore()).fixColors(Map.of("level", newLevel, "chance", randomEffect.getAmplifierChance()));
+                selectedEffect = random.getData();
+                newItem.appendLore(randomEffect.getLore()).fixColors(Map.of("level", newLevel, "chance", randomEffect.getAmplifierChance()));
             }
         }
-        else {
+        if ("none".equals(selectedEffect)) {
             newItem.fixColors(Map.of("level", newLevel));
         }
-        clicked.getInventory().setItemInMainHand(newItem.toItemStack());
+        final ItemStack upgradedItem = newItem.toItemStack();
+        UpgradeDataUtil.setLevel((Plugin)this.plugin, upgradedItem, newLevel);
+        UpgradeDataUtil.setEffect((Plugin)this.plugin, upgradedItem, selectedEffect);
+        clicked.getInventory().setItemInMainHand(upgradedItem);
     }
     
     private void removeItems(final Player player) {

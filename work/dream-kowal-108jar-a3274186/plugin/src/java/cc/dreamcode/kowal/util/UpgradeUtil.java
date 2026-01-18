@@ -15,4 +15,14 @@ public final class UpgradeUtil {
             return 0;
         }
     }
+
+    public static int parseLevel(final Object rawLevel) {
+        if (rawLevel == null) {
+            return 0;
+        }
+        if (rawLevel instanceof Number) {
+            return ((Number)rawLevel).intValue();
+        }
+        return parseLevel(rawLevel.toString());
+    }
 }

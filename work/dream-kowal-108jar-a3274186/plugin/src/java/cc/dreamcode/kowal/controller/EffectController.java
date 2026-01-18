@@ -3,7 +3,7 @@ package cc.dreamcode.kowal.controller;
 import org.bukkit.potion.PotionEffect;
 import cc.dreamcode.kowal.effect.Effect;
 import cc.dreamcode.kowal.effect.EffectType;
-import cc.dreamcode.utilities.bukkit.nbt.ItemNbtUtil;
+import cc.dreamcode.kowal.util.UpgradeDataUtil;
 import org.bukkit.inventory.ItemStack;
 import lombok.Generated;
 import eu.okaeri.injector.annotation.Inject;
@@ -44,7 +44,7 @@ public class EffectController implements Listener
             if (armor == null) {
                 continue;
             }
-            final String upgrade = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, armor, "upgrade-effect").orElse("none");
+            final String upgrade = UpgradeDataUtil.getEffect((Plugin)this.plugin, armor);
             if (upgrade.equals((Object)EffectType.ARMOR_DAMAGE.getData()) && this.pluginConfig.effects != null) {
                 final Effect effect = (Effect)this.pluginConfig.effects.get((Object)EffectType.ARMOR_DAMAGE);
                 if (effect != null) {
@@ -68,7 +68,7 @@ public class EffectController implements Listener
             if (armor == null) {
                 continue;
             }
-            final String upgrade = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, armor, "upgrade-effect").orElse("none");
+            final String upgrade = UpgradeDataUtil.getEffect((Plugin)this.plugin, armor);
             if (upgrade.equals((Object)EffectType.POTION_DURATION.getData()) && this.pluginConfig.effects != null) {
                 final Effect effect = (Effect)this.pluginConfig.effects.get((Object)EffectType.POTION_DURATION);
                 if (effect != null) {
@@ -113,7 +113,7 @@ public class EffectController implements Listener
             if (armor == null) {
                 continue;
             }
-            final String upgrade = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, armor, "upgrade-effect").orElse("none");
+            final String upgrade = UpgradeDataUtil.getEffect((Plugin)this.plugin, armor);
             if (upgrade.equals((Object)EffectType.ARROW.getData()) && this.pluginConfig.effects != null) {
                 final Effect effect = (Effect)this.pluginConfig.effects.get((Object)EffectType.ARROW);
                 if (effect != null) {

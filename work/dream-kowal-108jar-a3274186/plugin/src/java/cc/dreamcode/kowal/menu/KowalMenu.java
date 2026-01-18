@@ -14,7 +14,6 @@ import java.util.function.Consumer;
 import cc.dreamcode.utilities.bukkit.builder.ItemBuilder;
 import org.bukkit.Material;
 import org.bukkit.plugin.Plugin;
-import cc.dreamcode.utilities.bukkit.nbt.ItemNbtUtil;
 import org.bukkit.entity.Player;
 import cc.dreamcode.menu.adventure.base.BukkitMenu;
 import lombok.NonNull;
@@ -24,7 +23,7 @@ import cc.dreamcode.kowal.config.MessageConfig;
 import cc.dreamcode.kowal.config.PluginConfig;
 import cc.dreamcode.kowal.KowalPlugin;
 import cc.dreamcode.menu.adventure.setup.BukkitMenuPlayerSetup;
-import cc.dreamcode.kowal.util.UpgradeUtil;
+import cc.dreamcode.kowal.util.UpgradeDataUtil;
 
 public class KowalMenu implements BukkitMenuPlayerSetup
 {
@@ -47,8 +46,7 @@ public class KowalMenu implements BukkitMenuPlayerSetup
         final BukkitMenu bukkitMenu = builder.buildEmpty();
         bukkitMenu.setDisposeWhenClose(true);
         final ItemStack hand = humanEntity.getInventory().getItemInMainHand();
-        final String levelString = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, hand, "upgrade-level").orElse("0");
-        final int currentLevel = UpgradeUtil.parseLevel(levelString);
+        final int currentLevel = UpgradeDataUtil.getLevel((Plugin)this.plugin, hand);
         if (hand.getType().equals((Object)Material.AIR) || this.pluginConfig.kowalItems == null || !this.pluginConfig.kowalItems.containsKey((Object)hand.getType()) || currentLevel >= 7) {
             bukkitMenu.setItem(this.pluginConfig.upgradeItemSlot, ItemBuilder.of(this.pluginConfig.notUpgradeable).fixColors().toItemStack());
             return bukkitMenu;
@@ -94,8 +92,8 @@ public class KowalMenu implements BukkitMenuPlayerSetup
                         final KowalConfirmMenu kowalConfirmMenu = this.plugin.createInstance(KowalConfirmMenu.class);
                         kowalConfirmMenu.setLevel(level);
                         kowalConfirmMenu.setMode(this.mode);
-                        if (currentLevel == 0 && hand.hasItemMeta() && hand.getItemMeta().hasDisplayName() && !ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, hand, "display-name").isPresent()) {
-                            ItemNbtUtil.setValue((Plugin)this.plugin, hand, "display-name", StringColorUtil.breakColor(hand.getItemMeta().getDisplayName()));
+                        if (currentLevel == 0 && hand.hasItemMeta() && hand.getItemMeta().hasDisplayName() && UpgradeDataUtil.getDisplayName((Plugin)this.plugin, hand).isEmpty()) {
+                            UpgradeDataUtil.setDisplayName((Plugin)this.plugin, hand, StringColorUtil.breakColor(hand.getItemMeta().getDisplayName()));
                         }
                         kowalConfirmMenu.build(event.getWhoClicked()).open(event.getWhoClicked());
                     }

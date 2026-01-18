@@ -9,12 +9,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
-import cc.dreamcode.utilities.bukkit.nbt.ItemNbtUtil;
 import org.bukkit.entity.Player;
 import lombok.NonNull;
 import java.util.UUID;
 import cc.dreamcode.kowal.config.PluginConfig;
-import cc.dreamcode.kowal.util.UpgradeUtil;
+import cc.dreamcode.kowal.util.UpgradeDataUtil;
 
 public class ParticleCache
 {
@@ -50,8 +49,7 @@ public class ParticleCache
             if (!this.pluginConfig.kowalItems.containsKey(armor.getType())) {
                 return false;
             }
-            final String levelString = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, armor, "upgrade-level").orElse("0");
-            final int currentLevel = UpgradeUtil.parseLevel(levelString);
+            final int currentLevel = UpgradeDataUtil.getLevel((Plugin)this.plugin, armor);
             if (currentLevel < level) {
                 return false;
             }

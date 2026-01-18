@@ -10,6 +10,7 @@ import cc.dreamcode.utilities.RandomUtil;
 import cc.dreamcode.kowal.effect.EffectType;
 import org.bukkit.plugin.Plugin;
 import cc.dreamcode.kowal.level.Level;
+import cc.dreamcode.kowal.util.UpgradeDataUtil;
 import org.bukkit.Material;
 import cc.dreamcode.notice.bukkit.BukkitNotice;
 import cc.dreamcode.command.annotation.Completion;
@@ -97,19 +98,24 @@ public class KowalCommand implements CommandBase
             return this.messageConfig.commandUpgradeLevelError;
         }
         final Level found = (Level)this.pluginConfig.kowalLevels.get((Object)level);
-        final ItemBuilder newItem = ItemBuilder.of(item.getType()).setName((String)this.pluginConfig.kowalItems.get((Object)item.getType())).setLore(found.getItemLoreDisplay()).withNbt((Plugin)this.plugin, "upgrade-level", String.valueOf(level));
+        final ItemBuilder newItem = ItemBuilder.of(item.getType()).setName((String)this.pluginConfig.kowalItems.get((Object)item.getType())).setLore(found.getItemLoreDisplay());
+        String effectKey = "none";
         if (level == 7) {
             final EffectType[] effects = EffectType.values();
             final EffectType random = effects[RandomUtil.nextInteger(effects.length)];
             final Effect randomEffect = (this.pluginConfig.effects != null) ? (Effect)this.pluginConfig.effects.get((Object)random) : null;
             if (randomEffect != null) {
-                newItem.withNbt((Plugin)this.plugin, "upgrade-effect", random.getData()).appendLore(randomEffect.getLore()).fixColors(Map.of("level", level, "chance", randomEffect.getAmplifierChance()));
+                effectKey = random.getData();
+                newItem.appendLore(randomEffect.getLore()).fixColors(Map.of("level", level, "chance", randomEffect.getAmplifierChance()));
             }
         }
         else {
             newItem.fixColors(Map.of("level", level));
         }
-        sender.getInventory().setItemInMainHand(newItem.toItemStack());
+        final ItemStack upgradedItem = newItem.toItemStack();
+        UpgradeDataUtil.setLevel((Plugin)this.plugin, upgradedItem, level);
+        UpgradeDataUtil.setEffect((Plugin)this.plugin, upgradedItem, effectKey);
+        sender.getInventory().setItemInMainHand(upgradedItem);
         return this.messageConfig.commandUpgradeSuccess.with("level", level);
     }
     
