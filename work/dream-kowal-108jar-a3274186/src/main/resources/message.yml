@@ -1,0 +1,90 @@
+## Dream-Kowal (Message-Config) ##
+## Dostepne type: (DO_NOT_SEND, CHAT, ACTION_BAR, SUBTITLE, TITLE, TITLE_SUBTITLE) ##
+
+command-usage:
+  type: CHAT
+  text: "&7Przyklady uzycia komendy: &c{label}"
+command-usage-help:
+  type: CHAT
+  text: "&f{usage} &8- &7{description}"
+command-usage-not-found:
+  type: CHAT
+  text: "&cNie znaleziono pasujacych do kryteriow komendy."
+command-path-not-found:
+  type: CHAT
+  text: "&cTa komenda jest pusta lub nie posiadasz dostepu do niej."
+command-no-permission:
+  type: CHAT
+  text: "&cNie posiadasz uprawnien."
+command-not-player:
+  type: CHAT
+  text: "&cTa komende mozna tylko wykonac z poziomu gracza."
+command-not-console:
+  type: CHAT
+  text: "&cTa komende mozna tylko wykonac z poziomu konsoli."
+command-invalid-format:
+  type: CHAT
+  text: "&cPodano nieprawidlowy format argumentu komendy. ({input})"
+player-not-found:
+  type: CHAT
+  text: "&cPodanego gracza nie znaleziono."
+world-not-found:
+  type: CHAT
+  text: "&cPodanego swiata nie znaleziono."
+config-reloaded:
+  type: CHAT
+  text: "&aPrzeladowano! &7({time})"
+config-reload-error:
+  type: CHAT
+  text: "&cZnaleziono problem w konfiguracji: &6{error}"
+upgrade-success:
+  type: TITLE_SUBTITLE
+  text: "&aUlepszono!%NEWLINE%&7Udalo Ci sie ulepszyc przedmiot!"
+upgrade-failure:
+  type: TITLE_SUBTITLE
+  text: "&cNie ulepszono!%NEWLINE%&7Tym razem nie udalo Ci sie ulepszyc przedmiotu!"
+kamien-kowalski-required:
+  type: TITLE_SUBTITLE
+  text: "&cNie posiadasz magicznego kamienia!%NEWLINE%&7Aby ulepszyc przedmiot, musisz posiadac magiczny kamien!"
+upgrade-cannot-afford:
+  type: CHAT
+  text: "&cNie stac cie na to ulepszenie!"
+command-set-kamien-air:
+  type: CHAT
+  text: "&cMusisz trzymac przedmiot w rece."
+command-set-kamien-success:
+  type: CHAT
+  text: "&aUstawiono przedmiot kamienia kowalskiego."
+command-kamien-give-all-player:
+  type: CHAT
+  text: "&aOtrzymales kamien kowalski w ilosci &2x{amount}&a."
+command-kamien-give-all:
+  type: CHAT
+  text: "&aNadales kamien kowalski wszystkim graczom w ilosci &2{amount}&a."
+command-kamien-give-player:
+  type: CHAT
+  text: "&aOtrzymales kamien kowalski w ilosci &2x{amount}&a."
+command-kamien-give:
+  type: CHAT
+  text: "&aNadales kamien kowalski graczowi &2{player} &aw ilosci &2x{amount}&a."
+command-upgrade-air:
+  type: CHAT
+  text: "&cMusisz trzymac przedmiot w rece."
+command-upgrade-not-armor:
+  type: CHAT
+  text: "&cTego przedmiotu nie da sie ulepszyc."
+command-upgrade-level-not-exists:
+  type: CHAT
+  text: "&cPoziom ulepszenia nie moze byc wyzszy niz 7."
+command-upgrade-success:
+  type: CHAT
+  text: "&aUlepszono przedmiot w rece na poziom &2{level}&a."
+effect-arrow-use:
+  type: CHAT
+  text: "&aStrzala zostala odbita!"
+effect-damage-use-player:
+  type: CHAT
+  text: "&aZadane obrazenia zostaly odbite!"
+effect-damage-use-damger:
+  type: CHAT
+  text: "&cGracz odbil zadane obrazenia!"
