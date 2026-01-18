@@ -200,6 +200,6 @@ effect-list:
     lore-display: "&d{chance}% szansy na odbicie strzaly"
     amplifier-or-chance: 10
 
-upgrade-success-sound: BLOCK_ANVIL_DESTROY
+upgrade-success-sound: BLOCK_ANVIL_BREAK
 upgrade-failure-sound: ENTITY_ITEM_BREAK
 particles: HAPPY_VILLAGER

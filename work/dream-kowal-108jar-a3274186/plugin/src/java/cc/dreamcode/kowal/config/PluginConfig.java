@@ -114,7 +114,7 @@ public class PluginConfig extends OkaeriConfig
         this.kowalColors = new MapBuilder<Material, String>().put(Material.DIAMOND_HELMET, "&b+{level}").put(Material.DIAMOND_CHESTPLATE, "&b+{level}").put(Material.DIAMOND_LEGGINGS, "&b+{level}").put(Material.DIAMOND_BOOTS, "&b+{level}").put(Material.NETHERITE_HELMET, "&4+{level}").put(Material.NETHERITE_CHESTPLATE, "&4+{level}").put(Material.NETHERITE_LEGGINGS, "&4+{level}").put(Material.NETHERITE_BOOTS, "&4+{level}").build();
         this.kamienKowalski = ItemBuilder.of(Material.GRAY_DYE).setName("&cKamien kowalski").setLore("&8» &7Powoduje, ze przedmiot po ulepszeniu", "&8» &7u &fKowala &7nie cofa swojego poziomu w", "&8» &7przypadku &eniepowodzenia&7!").toItemStack();
         this.effects = new MapBuilder<EffectType, Effect>().put(EffectType.ARMOR_DAMAGE, new Effect("&6{chance}% wolniejsze niszczenie seta", 12)).put(EffectType.POTION_DURATION, new Effect("&9{chance}% wydluzenia efektu wypitych mikstur", 12)).put(EffectType.DAMAGE, new Effect("&a{chance}% szansy na odbicie ciosu", 3)).put(EffectType.ARROW, new Effect("&d{chance}% szansy na odbicie strzaly", 10)).build();
-        this.upgradeSuccess = Sound.BLOCK_ANVIL_DESTROY;
+        this.upgradeSuccess = Sound.BLOCK_ANVIL_BREAK;
         this.upgradeFailure = Sound.ENTITY_ITEM_BREAK;
         this.particle = Particle.HAPPY_VILLAGER;
     }
