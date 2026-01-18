@@ -1,0 +1,24 @@
+name: Dream-Kowal
+version: 1.0.8
+main: cc.dreamcode.kowal.KowalPlugin
+api-version: "1.21"
+author: Sebt
+softdepend:
+  - Vault
+commands:
+  kowal:
+    description: Zarzadzanie pluginem kowal.
+    usage: /kowal
+permissions:
+  dream-kowal.give:
+    description: Nadaje kamien kowalski graczom.
+    default: op
+  dream-kowal.set:
+    description: Ustawia przedmiot kamienia kowalskiego.
+    default: op
+  dream-kowal.upgrade:
+    description: Ulepsza przedmiot w rece na podany poziom.
+    default: op
+  dream-kowal.reload:
+    description: Przeladowuje konfiguracje.
+    default: op
