@@ -33,6 +33,7 @@ import cc.dreamcode.platform.other.component.DreamCommandExtension;
 import cc.dreamcode.command.bukkit.BukkitCommandProvider;
 import cc.dreamcode.notice.bukkit.BukkitNoticeProvider;
 import cc.dreamcode.menu.adventure.BukkitMenuProvider;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bukkit.plugin.Plugin;
 import eu.okaeri.tasker.bukkit.BukkitTasker;
 import cc.dreamcode.utilities.bukkit.VersionUtil;
@@ -44,6 +45,8 @@ import cc.dreamcode.platform.bukkit.DreamBukkitPlatform;
 public final class KowalPlugin extends DreamBukkitPlatform implements DreamBukkitConfig
 {
     private static KowalPlugin instance;
+    private BukkitNoticeProvider noticeProvider;
+    private BukkitAudiences bukkitAudiences;
     
     @Override
     public void load(@NonNull final ComponentService componentService) {
@@ -65,7 +68,9 @@ public final class KowalPlugin extends DreamBukkitPlatform implements DreamBukki
         componentService.setDebug(false);
         this.registerInjectable(BukkitTasker.newPool((Plugin)this));
         this.registerInjectable(BukkitMenuProvider.create((Plugin)this));
-        this.registerInjectable(BukkitNoticeProvider.create((Plugin)this));
+        this.noticeProvider = BukkitNoticeProvider.create((Plugin)this);
+        this.bukkitAudiences = this.noticeProvider.getBukkitAudiences();
+        this.registerInjectable(this.noticeProvider);
         this.registerInjectable(BukkitCommandProvider.create((Plugin)this));
         componentService.registerExtension(DreamCommandExtension.class);
         componentService.registerResolver(ConfigurationResolver.class);
@@ -90,6 +95,11 @@ public final class KowalPlugin extends DreamBukkitPlatform implements DreamBukki
     public void disable() {
         this.getServer().getScheduler().cancelTasks(this);
         this.getInject(ParticleCache.class).ifPresent(ParticleCache::clear);
+        if (this.bukkitAudiences != null) {
+            this.bukkitAudiences.close();
+            this.bukkitAudiences = null;
+        }
+        this.noticeProvider = null;
     }
     
     @NonNull

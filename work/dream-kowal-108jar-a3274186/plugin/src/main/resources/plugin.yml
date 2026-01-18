@@ -3,6 +3,8 @@ version: 1.0.8
 main: cc.dreamcode.kowal.KowalPlugin
 api-version: "1.21"
 author: Sebt
+libraries:
+  - net.kyori:adventure-platform-bukkit:4.4.1
 softdepend:
   - Vault
 commands:
