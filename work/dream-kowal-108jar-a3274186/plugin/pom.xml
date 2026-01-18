@@ -229,6 +229,7 @@
                                 <exclude>io.papermc.paper:paper-api</exclude>
                                 <exclude>org.spigotmc:spigot-api</exclude>
                                 <exclude>org.bukkit:bukkit</exclude>
+                                <exclude>com.destroystokyo.paper:*</exclude>
                                 <exclude>org.bukkit:*</exclude>
                                 <exclude>org.spigotmc:*</exclude>
                                 <exclude>net.minecraft:*</exclude>
@@ -242,6 +243,7 @@
                                     <exclude>org/bukkit/**</exclude>
                                     <exclude>io/papermc/**</exclude>
                                     <exclude>net/minecraft/**</exclude>
+                                    <exclude>com/destroystokyo/**</exclude>
                                     <exclude>com/mojang/**</exclude>
                                 </excludes>
                             </filter>
