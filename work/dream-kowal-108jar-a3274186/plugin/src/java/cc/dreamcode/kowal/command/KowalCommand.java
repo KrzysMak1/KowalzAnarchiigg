@@ -30,10 +30,12 @@ import cc.dreamcode.kowal.config.PluginConfig;
 import cc.dreamcode.kowal.KowalPlugin;
 import cc.dreamcode.command.annotation.Command;
 import cc.dreamcode.command.CommandBase;
+import org.bukkit.util.RayTraceResult;
 
 @Command(name = "kowal")
 public class KowalCommand implements CommandBase
 {
+    private static final int NPC_TARGET_RANGE = 8;
     private final KowalPlugin plugin;
     private final PluginConfig pluginConfig;
     private final MessageConfig messageConfig;
@@ -118,13 +120,25 @@ public class KowalCommand implements CommandBase
     @Permission("dream-kowal.npc")
     @Executor(path = "npc", description = "Ustawia npc do otwierania gui kowala.")
     BukkitNotice npc(final Player sender) {
-        final Entity target = sender.getTargetEntity(5);
+        final Entity target = this.findTargetEntity(sender);
         if (target == null) {
             return this.messageConfig.npcNotFound;
         }
         this.pluginConfig.fancyNpcUuid = target.getUniqueId().toString();
         this.pluginConfig.save();
         return this.messageConfig.npcSet.with("uuid", target.getUniqueId().toString());
+    }
+
+    private Entity findTargetEntity(final Player sender) {
+        final Entity directTarget = sender.getTargetEntity(NPC_TARGET_RANGE);
+        if (directTarget != null) {
+            return directTarget;
+        }
+        final RayTraceResult rayTraceResult = sender.rayTraceEntities(NPC_TARGET_RANGE);
+        if (rayTraceResult == null) {
+            return null;
+        }
+        return rayTraceResult.getHitEntity();
     }
     
     @Permission("dream-kowal.reload")
