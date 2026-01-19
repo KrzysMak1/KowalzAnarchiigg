@@ -1,66 +1,61 @@
-package cc.dreamcode.kowal.listener;
+package cc.dreamcode.kowal.citizens;
 
 import cc.dreamcode.kowal.KowalPlugin;
 import cc.dreamcode.kowal.config.PluginConfig;
-import cc.dreamcode.kowal.menu.KowalMenu;
-import de.oliver.fancynpcs.api.actions.ActionTrigger;
+import cc.dreamcode.utilities.bukkit.nbt.ItemNbtUtil;
 import eu.okaeri.injector.annotation.Inject;
 import lombok.Generated;
-import de.oliver.fancynpcs.api.events.NpcInteractEvent;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
-import cc.dreamcode.utilities.bukkit.nbt.ItemNbtUtil;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class NpcInteractListener implements Listener {
-    private static final long CLICK_DEBOUNCE_MS = 150L;
+public class CitizensBypassService {
+    private static final long BYPASS_DURATION_MS = 1500L;
+    private final Map<UUID, BypassEntry> bypassEntries;
     private final KowalPlugin plugin;
     private final PluginConfig pluginConfig;
-    private final Map<UUID, Long> lastClickMillis;
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
-    public void onNpcInteract(final NpcInteractEvent event) {
-        final PluginConfig.Settings settings = this.pluginConfig.settings;
-        if (settings == null || settings.npcId == null || settings.npcId.isBlank()) {
+    public void markBypass(final Player player) {
+        if (player == null) {
             return;
         }
-        if (event.getInteractionType() != ActionTrigger.RIGHT_CLICK) {
-            return;
-        }
-        if (!settings.npcId.equalsIgnoreCase(event.getNpc().getData().getId())) {
-            return;
-        }
-        final Player player = event.getPlayer();
-        if (this.isDebounced(player)) {
-            return;
-        }
-        event.setCancelled(true);
         final ItemStack snapshot = this.cloneSnapshot(player.getInventory().getItemInMainHand());
-        Bukkit.getScheduler().runTask(this.plugin, () -> this.openMenuSafely(player, snapshot));
+        this.bypassEntries.put(player.getUniqueId(), new BypassEntry(System.currentTimeMillis() + BYPASS_DURATION_MS, snapshot));
     }
 
-    private void openMenuSafely(final Player player, final ItemStack snapshot) {
-        if (!player.isOnline()) {
+    public void applyBypassIfActive(final Player player) {
+        if (player == null) {
+            return;
+        }
+        final UUID uuid = player.getUniqueId();
+        final BypassEntry entry = this.bypassEntries.get(uuid);
+        if (entry == null) {
+            return;
+        }
+        if (System.currentTimeMillis() > entry.expiresAt()) {
+            this.bypassEntries.remove(uuid);
+            return;
+        }
+        this.bypassEntries.remove(uuid);
+        if (this.isDebugEnabled()) {
+            this.plugin.getLogger().info("Bypass auto-equip aktywny dla gracza " + player.getName() + ". Pomijam auto-equip.");
+        }
+        final ItemStack snapshot = entry.snapshot();
+        if (this.isAir(snapshot)) {
             return;
         }
         final PlayerInventory inventory = player.getInventory();
         final ItemStack currentMain = inventory.getItemInMainHand();
-        if (this.shouldRecoverAutoEquip(snapshot, currentMain)) {
-            this.recoverAutoEquippedItem(player, snapshot, currentMain);
+        if (!this.shouldRecoverAutoEquip(snapshot, currentMain)) {
+            return;
         }
-        final KowalMenu kowalMenu = this.plugin.createInstance(KowalMenu.class);
-        kowalMenu.build(player).open(player);
-        player.updateInventory();
+        this.recoverAutoEquippedItem(player, snapshot, currentMain);
     }
 
     private void recoverAutoEquippedItem(final Player player, final ItemStack snapshot, final ItemStack currentMain) {
@@ -135,22 +130,17 @@ public class NpcInteractListener implements Listener {
         return itemStack.clone();
     }
 
-    private boolean isDebounced(final Player player) {
-        final long now = System.currentTimeMillis();
-        final Long lastClick = this.lastClickMillis.get(player.getUniqueId());
-        if (lastClick != null && now - lastClick < CLICK_DEBOUNCE_MS) {
-            return true;
-        }
-        this.lastClickMillis.put(player.getUniqueId(), now);
-        return false;
+    private boolean isDebugEnabled() {
+        final PluginConfig.CitizensSettings citizensSettings = this.pluginConfig.citizens;
+        return citizensSettings != null && citizensSettings.debug;
     }
 
     @Inject
     @Generated
-    public NpcInteractListener(final KowalPlugin plugin, final PluginConfig pluginConfig) {
+    public CitizensBypassService(final KowalPlugin plugin, final PluginConfig pluginConfig) {
+        this.bypassEntries = new ConcurrentHashMap<>();
         this.plugin = plugin;
         this.pluginConfig = pluginConfig;
-        this.lastClickMillis = new HashMap<>();
     }
 
     private enum ArmorSlot {
@@ -169,5 +159,8 @@ public class NpcInteractListener implements Listener {
                 case BOOTS -> inventory.setBoots(new ItemStack(Material.AIR));
             }
         }
+    }
+
+    private record BypassEntry(long expiresAt, ItemStack snapshot) {
     }
 }

@@ -79,15 +79,6 @@ command-upgrade-level-not-exists:
 command-upgrade-success:
   type: CHAT
   text: "&aUlepszono przedmiot w rece na poziom &2{level}&a."
-command-npc-not-found:
-  type: CHAT
-  text: "&cMusisz patrzec na NPC."
-command-npc-select:
-  type: CHAT
-  text: "&aKliknij teraz NPC, aby przypisac go do kowala."
-command-npc-set:
-  type: CHAT
-  text: "&aUstawiono NPC kowala. &7UUID: &f{uuid}"
 effect-arrow-use:
   type: CHAT
   text: "&aStrzala zostala odbita!"

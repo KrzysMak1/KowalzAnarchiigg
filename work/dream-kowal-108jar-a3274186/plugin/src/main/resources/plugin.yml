@@ -7,7 +7,7 @@ libraries:
   - net.kyori:adventure-platform-bukkit:4.4.1
 softdepend:
   - Vault
-  - FancyNpcs
+  - Citizens
 commands:
   kowal:
     description: Zarzadzanie pluginem kowal.
@@ -24,7 +24,4 @@ permissions:
     default: op
   dream-kowal.reload:
     description: Przeladowuje konfiguracje.
-    default: op
-  dream-kowal.npc:
-    description: Ustawia NPC otwierajacego GUI kowala.
     default: op

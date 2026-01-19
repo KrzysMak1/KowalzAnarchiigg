@@ -26,6 +26,14 @@ Po pierwszym uruchomieniu plugin wygeneruje:
 
 Zachowuj klucze konfiguracyjne (nazwy pól) bez zmian, aby zachować kompatybilność.
 
+### Integracja Citizens (bypass auto-equip)
+
+1. Znajdź ID NPC:
+   - `/npc select` (zaznacz NPC)
+   - `/npc info` lub `/npc list` (zobacz numer ID)
+2. W `config.yml` ustaw listę `citizens.bypassSetNpcIds`, aby włączyć bypass auto-equip dla tych NPC.
+3. Komendę, którą ma wykonywać NPC (np. `/kowal`), przypinasz samodzielnie w Citizens.
+
 ## Komendy
 
 - `/kowal` – główna komenda GUI.

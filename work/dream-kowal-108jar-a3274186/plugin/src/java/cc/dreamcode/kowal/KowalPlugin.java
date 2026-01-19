@@ -16,10 +16,8 @@ import cc.dreamcode.kowal.controller.EffectController;
 import cc.dreamcode.kowal.controller.PlayerController;
 import cc.dreamcode.kowal.controller.ArmorEquipController;
 import cc.dreamcode.kowal.controller.DamageController;
-import cc.dreamcode.kowal.listener.NpcInteractListener;
-import cc.dreamcode.kowal.controller.NpcSelectionController;
-import cc.dreamcode.kowal.npc.NpcSelectionService;
-import cc.dreamcode.kowal.npc.NpcUuidRegistry;
+import cc.dreamcode.kowal.citizens.CitizensBypassService;
+import cc.dreamcode.kowal.listener.CitizensNpcCommandListener;
 import cc.dreamcode.kowal.tasks.ParticleTask;
 import java.util.function.Consumer;
 import cc.dreamcode.platform.bukkit.hook.PluginHookManager;
@@ -88,19 +86,16 @@ public final class KowalPlugin extends DreamBukkitPlatform implements DreamBukki
         componentService.registerComponent(PluginHookManager.class, (java.util.function.Consumer<PluginHookManager>)(pluginHookManager -> pluginHookManager.registerHook(VaultHook.class)));
         componentService.registerComponent(ParticleCache.class, (java.util.function.Consumer<ParticleCache>)ParticleCache::checkOnline);
         componentService.registerComponent(ParticleTask.class);
-        componentService.registerComponent(NpcSelectionService.class);
-        componentService.registerComponent(NpcUuidRegistry.class);
+        componentService.registerComponent(CitizensBypassService.class);
         componentService.registerComponent(DamageController.class);
         componentService.registerComponent(ArmorEquipController.class);
         componentService.registerComponent(PlayerController.class);
-        componentService.registerComponent(NpcSelectionController.class);
         componentService.registerComponent(EffectController.class);
         componentService.registerComponent(KowalCommand.class);
-        this.getInject(PluginConfig.class).ifPresent(this::validateConfig);
-        this.getInject(NpcUuidRegistry.class).ifPresent(NpcUuidRegistry::reload);
-        if (this.getServer().getPluginManager().isPluginEnabled("FancyNpcs")) {
-            this.getServer().getPluginManager().registerEvents(this.createInstance(NpcInteractListener.class), this);
-        }
+        this.getInject(PluginConfig.class).ifPresent(pluginConfig -> {
+            this.validateConfig(pluginConfig);
+            this.registerCitizensListener(pluginConfig);
+        });
     }
     
     public void disable() {
@@ -151,5 +146,19 @@ public final class KowalPlugin extends DreamBukkitPlatform implements DreamBukki
                 }
             }
         }
+    }
+
+    private void registerCitizensListener(final PluginConfig pluginConfig) {
+        final PluginConfig.CitizensSettings citizensSettings = pluginConfig.citizens;
+        if (citizensSettings == null || !citizensSettings.enabled) {
+            return;
+        }
+        if (!this.getServer().getPluginManager().isPluginEnabled("Citizens")) {
+            return;
+        }
+        if (citizensSettings.debug) {
+            this.getLogger().info("Wykryto Citizens. Integracja NPC jest aktywna.");
+        }
+        this.getServer().getPluginManager().registerEvents(this.createInstance(CitizensNpcCommandListener.class), this);
     }
 }
