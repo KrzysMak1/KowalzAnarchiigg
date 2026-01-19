@@ -93,6 +93,9 @@ public class PluginConfig extends OkaeriConfig
     @Comments({ @Comment, @Comment({ "Lista mozliwych particlesow dla pelnego seta 6 lub 7 poziomu (losowane przy zalozeniu pelnego seta lub mieszanego 6/7)." }) })
     @CustomKey("particles")
     public List<Particle> particles;
+    @Comments({ @Comment, @Comment({ "Ustawienia ogolne pluginu." }) })
+    @CustomKey("settings")
+    public Settings settings;
     @Comments({ @Comment, @Comment({ "Ustawienia FancyNpcs do otwierania GUI kowala." }) })
     @CustomKey("npc")
     public NpcSettings npc;
@@ -121,7 +124,18 @@ public class PluginConfig extends OkaeriConfig
         this.upgradeSuccess = "BLOCK_ANVIL_BREAK";
         this.upgradeFailure = "ENTITY_ITEM_BREAK";
         this.particles = List.of(Particle.HAPPY_VILLAGER);
+        this.settings = new Settings();
         this.npc = new NpcSettings();
+    }
+
+    public static class Settings extends OkaeriConfig {
+        @Comment("ID NPC z FancyNpcs (NpcData id). Sprawdz komenda /fnpc list lub /fnpc info <id>.")
+        @CustomKey("npcId")
+        public String npcId;
+
+        public Settings() {
+            this.npcId = "";
+        }
     }
 
     public static class NpcSettings extends OkaeriConfig {

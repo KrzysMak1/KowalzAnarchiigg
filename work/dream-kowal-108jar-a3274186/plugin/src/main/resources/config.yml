@@ -212,6 +212,10 @@ upgrade-failure-sound: ENTITY_ITEM_BREAK
 particles:
   - HAPPY_VILLAGER
 
+# ID NPC z FancyNpcs (NpcData id). Sprawdz komenda /fnpc list lub /fnpc info <id>.
+settings:
+  npcId: ""
+
 # Ustawienia FancyNPC, ktore maja otwierac GUI kowala po kliknieciu PPM.
 npc:
   enabled: true

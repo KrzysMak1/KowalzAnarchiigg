@@ -98,7 +98,9 @@ public final class KowalPlugin extends DreamBukkitPlatform implements DreamBukki
         componentService.registerComponent(KowalCommand.class);
         this.getInject(PluginConfig.class).ifPresent(this::validateConfig);
         this.getInject(NpcUuidRegistry.class).ifPresent(NpcUuidRegistry::reload);
-        this.getServer().getPluginManager().registerEvents(this.createInstance(NpcInteractListener.class), this);
+        if (this.getServer().getPluginManager().isPluginEnabled("FancyNpcs")) {
+            this.getServer().getPluginManager().registerEvents(this.createInstance(NpcInteractListener.class), this);
+        }
     }
     
     public void disable() {
