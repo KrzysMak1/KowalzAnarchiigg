@@ -108,7 +108,7 @@ public class KowalMenu implements BukkitMenuPlayerSetup
             }
             bukkitMenu.setItem((int)slot, ItemBuilder.of(item).fixColors().toItemStack());
         });
-        bukkitMenu.setItem(this.pluginConfig.upgradeItemSlot, humanEntity.getInventory().getItemInMainHand());
+        bukkitMenu.setItem(this.pluginConfig.upgradeItemSlot, humanEntity.getInventory().getItemInMainHand().clone(), (Consumer<InventoryClickEvent>)(event -> event.setCancelled(true)));
         return bukkitMenu;
     }
     
