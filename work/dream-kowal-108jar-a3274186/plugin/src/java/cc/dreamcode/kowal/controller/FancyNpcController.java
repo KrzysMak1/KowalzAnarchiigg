@@ -44,12 +44,12 @@ public class FancyNpcController implements Listener {
         final Player player = event.getPlayer();
         final ItemStack handSnapshot = player.getInventory().getItemInMainHand().clone();
         final EquipmentSlot armorSlot = resolveArmorSlot(handSnapshot.getType());
-        final ItemStack previousArmor = armorSlot != null ? getArmorItem(player, armorSlot) : null;
+        final ItemStack previousArmor = armorSlot != null ? cloneItem(getArmorItem(player, armorSlot)) : null;
         event.setCancelled(true);
         final KowalMenu menu = this.plugin.createInstance(KowalMenu.class);
         menu.build(player).open(player);
-        if (armorSlot != null && previousArmor == null) {
-            Bukkit.getScheduler().runTask(this.plugin, () -> restoreHandItem(player, handSnapshot, armorSlot));
+        if (armorSlot != null) {
+            Bukkit.getScheduler().runTask(this.plugin, () -> restoreHandItem(player, handSnapshot, previousArmor, armorSlot));
         }
     }
 
@@ -57,17 +57,14 @@ public class FancyNpcController implements Listener {
         return Bukkit.getPluginManager().isPluginEnabled("FancyNpcs");
     }
 
-    private void restoreHandItem(final Player player, final ItemStack handSnapshot, final EquipmentSlot armorSlot) {
+    private void restoreHandItem(final Player player, final ItemStack handSnapshot, final ItemStack previousArmor, final EquipmentSlot armorSlot) {
         final ItemStack currentHand = player.getInventory().getItemInMainHand();
         final ItemStack currentArmor = getArmorItem(player, armorSlot);
-        if (currentArmor == null || currentHand.getType() != Material.AIR) {
+        if (isSameItem(currentHand, handSnapshot) && isSameItem(currentArmor, previousArmor)) {
             return;
         }
-        if (!currentArmor.isSimilar(handSnapshot)) {
-            return;
-        }
-        player.getInventory().setItemInMainHand(handSnapshot);
-        setArmorItem(player, armorSlot, null);
+        player.getInventory().setItemInMainHand(handSnapshot.clone());
+        setArmorItem(player, armorSlot, cloneItem(previousArmor));
     }
 
     private static EquipmentSlot resolveArmorSlot(final Material material) {
@@ -109,6 +106,24 @@ public class FancyNpcController implements Listener {
             default -> {
             }
         }
+    }
+
+    private static boolean isSameItem(final ItemStack left, final ItemStack right) {
+        if (isAir(left) && isAir(right)) {
+            return true;
+        }
+        if (left == null || right == null) {
+            return false;
+        }
+        return left.isSimilar(right);
+    }
+
+    private static boolean isAir(final ItemStack item) {
+        return item == null || item.getType() == Material.AIR;
+    }
+
+    private static ItemStack cloneItem(final ItemStack item) {
+        return item == null ? null : item.clone();
     }
 
     @Inject
