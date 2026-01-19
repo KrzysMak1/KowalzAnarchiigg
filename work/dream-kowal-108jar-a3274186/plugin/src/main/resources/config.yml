@@ -203,3 +203,5 @@ effect-list:
 upgrade-success-sound: BLOCK_ANVIL_BREAK
 upgrade-failure-sound: ENTITY_ITEM_BREAK
 particles: HAPPY_VILLAGER
+particles-level-seven:
+  - HAPPY_VILLAGER

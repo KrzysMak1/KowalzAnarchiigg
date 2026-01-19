@@ -1,13 +1,13 @@
 package cc.dreamcode.kowal.tasks;
 
-import org.bukkit.entity.Player;
 import org.bukkit.Bukkit;
-import java.util.UUID;
 import lombok.Generated;
 import eu.okaeri.injector.annotation.Inject;
 import cc.dreamcode.kowal.ParticleCache;
 import cc.dreamcode.kowal.config.PluginConfig;
 import cc.dreamcode.platform.bukkit.component.scheduler.Scheduler;
+import org.bukkit.Particle;
+import org.bukkit.entity.Player;
 
 @Scheduler(async = false, delay = 20L, interval = 20L)
 public class ParticleTask implements Runnable
@@ -16,15 +16,19 @@ public class ParticleTask implements Runnable
     private final ParticleCache particleCache;
     
     public void run() {
-        if (this.pluginConfig.particle == null) {
+        if (this.pluginConfig.particle == null && (this.pluginConfig.particlesLevelSeven == null || this.pluginConfig.particlesLevelSeven.isEmpty())) {
             return;
         }
-        this.particleCache.values().forEach(uuid -> {
-            final Player player = Bukkit.getPlayer(uuid);
+        this.particleCache.entries().forEach(entry -> {
+            final Player player = Bukkit.getPlayer(entry.getKey());
             if (player == null || !player.isOnline()) {
                 return;
             }
-            player.getWorld().spawnParticle(this.pluginConfig.particle, player.getLocation().add(0.0, 2.0, 0.0), 4, 0.5, 1.0, 0.5);
+            final Particle particle = entry.getValue();
+            if (particle == null) {
+                return;
+            }
+            player.getWorld().spawnParticle(particle, player.getLocation().add(0.0, 2.0, 0.0), 4, 0.5, 1.0, 0.5);
         });
     }
     
