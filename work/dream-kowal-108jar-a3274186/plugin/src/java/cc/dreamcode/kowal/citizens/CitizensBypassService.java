@@ -2,21 +2,21 @@ package cc.dreamcode.kowal.citizens;
 
 import cc.dreamcode.kowal.KowalPlugin;
 import cc.dreamcode.kowal.config.PluginConfig;
-import cc.dreamcode.utilities.bukkit.nbt.ItemNbtUtil;
 import eu.okaeri.injector.annotation.Inject;
 import lombok.Generated;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.plugin.Plugin;
 
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 public class CitizensBypassService {
     private static final long BYPASS_DURATION_MS = 1500L;
+    private static final long DEBOUNCE_MS = 150L;
     private final Map<UUID, BypassEntry> bypassEntries;
     private final KowalPlugin plugin;
     private final PluginConfig pluginConfig;
@@ -25,95 +25,132 @@ public class CitizensBypassService {
         if (player == null) {
             return;
         }
-        final ItemStack snapshot = this.cloneSnapshot(player.getInventory().getItemInMainHand());
-        this.bypassEntries.put(player.getUniqueId(), new BypassEntry(System.currentTimeMillis() + BYPASS_DURATION_MS, snapshot));
+        final UUID uuid = player.getUniqueId();
+        final long now = System.currentTimeMillis();
+        final BypassEntry existing = this.bypassEntries.get(uuid);
+        if (existing != null && now - existing.createdAt() < DEBOUNCE_MS) {
+            return;
+        }
+        final PlayerInventory inventory = player.getInventory();
+        final int heldSlot = inventory.getHeldItemSlot();
+        final ItemStack handBefore = this.cloneSnapshot(inventory.getItem(heldSlot));
+        final ArmorSlot armorSlot = this.resolveArmorSlot(handBefore);
+        final ItemStack armorBefore = armorSlot != null ? this.cloneSnapshot(this.getArmorItem(inventory, armorSlot)) : null;
+        this.bypassEntries.put(uuid, new BypassEntry(now + BYPASS_DURATION_MS, now, heldSlot, handBefore, armorSlot, armorBefore));
     }
 
-    public void applyBypassIfActive(final Player player) {
+    public boolean scheduleNpcOpenIfActive(final Player player, final Consumer<ItemStack> openAction) {
         if (player == null) {
-            return;
+            return false;
         }
         final UUID uuid = player.getUniqueId();
         final BypassEntry entry = this.bypassEntries.get(uuid);
         if (entry == null) {
-            return;
+            return false;
         }
         if (System.currentTimeMillis() > entry.expiresAt()) {
             this.bypassEntries.remove(uuid);
-            return;
+            return false;
         }
         this.bypassEntries.remove(uuid);
-        if (this.isDebugEnabled()) {
-            this.plugin.getLogger().info("Bypass auto-equip aktywny dla gracza " + player.getName() + ". Pomijam auto-equip.");
-        }
-        final ItemStack snapshot = entry.snapshot();
-        if (this.isAir(snapshot)) {
-            return;
-        }
-        final PlayerInventory inventory = player.getInventory();
-        final ItemStack currentMain = inventory.getItemInMainHand();
-        if (!this.shouldRecoverAutoEquip(snapshot, currentMain)) {
-            return;
-        }
-        this.recoverAutoEquippedItem(player, snapshot, currentMain);
+        this.plugin.getServer().getScheduler().runTask(this.plugin, () -> this.applyBypassAfterTick(player, entry, openAction));
+        return true;
     }
 
-    private void recoverAutoEquippedItem(final Player player, final ItemStack snapshot, final ItemStack currentMain) {
-        if (!this.isKowalSetItem(snapshot)) {
-            return;
-        }
+    private void applyBypassAfterTick(final Player player, final BypassEntry entry, final Consumer<ItemStack> openAction) {
         final PlayerInventory inventory = player.getInventory();
-        final ArmorMatch match = this.findArmorMatch(inventory, snapshot);
-        if (match == null) {
+        final ItemStack handBefore = entry.handBefore();
+        if (this.isAir(handBefore)) {
             return;
         }
-        match.clear(inventory);
-        if (!this.isAir(currentMain) && !this.isSameItem(currentMain, match.item())) {
-            inventory.addItem(currentMain).values().forEach(item -> player.getWorld().dropItemNaturally(player.getLocation(), item));
+        final int heldSlot = entry.heldSlot();
+        final ItemStack handNow = inventory.getItem(heldSlot);
+        final ArmorSlot expectedArmorSlot = entry.armorSlot();
+        ItemStack armorNow = expectedArmorSlot != null ? this.getArmorItem(inventory, expectedArmorSlot) : null;
+        Source source = null;
+        if (expectedArmorSlot != null && this.isSimilarItem(armorNow, handBefore)) {
+            source = new Source(SourceType.ARMOR, expectedArmorSlot, armorNow);
+        } else if (this.isSimilarItem(handNow, handBefore)) {
+            source = new Source(SourceType.HAND, null, handNow);
+        } else {
+            final ArmorSlot fallbackSlot = this.findArmorSlot(inventory, handBefore);
+            if (fallbackSlot != null) {
+                armorNow = this.getArmorItem(inventory, fallbackSlot);
+                source = new Source(SourceType.ARMOR, fallbackSlot, armorNow);
+            }
         }
-        inventory.setItemInMainHand(match.item());
+        if (source == null || this.isAir(source.item())) {
+            return;
+        }
+        if (source.type() == SourceType.ARMOR) {
+            this.logDebug("Wykryto auto-equip (zrodlo=ARMOR) dla gracza " + player.getName() + ".");
+            this.setArmorItem(inventory, source.armorSlot(), entry.armorBefore());
+            inventory.setItem(heldSlot, new ItemStack(Material.AIR));
+        } else {
+            this.logDebug("Wykryto wejscie z reki (zrodlo=HAND) dla gracza " + player.getName() + ".");
+            inventory.setItem(heldSlot, new ItemStack(Material.AIR));
+        }
+        openAction.accept(source.item());
+        player.updateInventory();
     }
 
-    private ArmorMatch findArmorMatch(final PlayerInventory inventory, final ItemStack snapshot) {
-        if (this.isSameItem(snapshot, inventory.getHelmet()) && this.isKowalSetItem(inventory.getHelmet())) {
-            return new ArmorMatch(ArmorSlot.HELMET, inventory.getHelmet());
+    private ArmorSlot resolveArmorSlot(final ItemStack itemStack) {
+        if (this.isAir(itemStack)) {
+            return null;
         }
-        if (this.isSameItem(snapshot, inventory.getChestplate()) && this.isKowalSetItem(inventory.getChestplate())) {
-            return new ArmorMatch(ArmorSlot.CHESTPLATE, inventory.getChestplate());
+        final String name = itemStack.getType().name();
+        if (name.endsWith("_HELMET")) {
+            return ArmorSlot.HELMET;
         }
-        if (this.isSameItem(snapshot, inventory.getLeggings()) && this.isKowalSetItem(inventory.getLeggings())) {
-            return new ArmorMatch(ArmorSlot.LEGGINGS, inventory.getLeggings());
+        if (name.endsWith("_CHESTPLATE") || itemStack.getType() == Material.ELYTRA) {
+            return ArmorSlot.CHESTPLATE;
         }
-        if (this.isSameItem(snapshot, inventory.getBoots()) && this.isKowalSetItem(inventory.getBoots())) {
-            return new ArmorMatch(ArmorSlot.BOOTS, inventory.getBoots());
+        if (name.endsWith("_LEGGINGS")) {
+            return ArmorSlot.LEGGINGS;
+        }
+        if (name.endsWith("_BOOTS")) {
+            return ArmorSlot.BOOTS;
         }
         return null;
     }
 
-    private boolean shouldRecoverAutoEquip(final ItemStack snapshot, final ItemStack currentMain) {
-        if (this.isAir(snapshot)) {
-            return false;
+    private ArmorSlot findArmorSlot(final PlayerInventory inventory, final ItemStack snapshot) {
+        if (this.isSimilarItem(snapshot, inventory.getHelmet())) {
+            return ArmorSlot.HELMET;
         }
-        if (this.isSameItem(snapshot, currentMain)) {
-            return false;
+        if (this.isSimilarItem(snapshot, inventory.getChestplate())) {
+            return ArmorSlot.CHESTPLATE;
         }
-        return this.isAir(currentMain) || !this.isSameItem(snapshot, currentMain);
+        if (this.isSimilarItem(snapshot, inventory.getLeggings())) {
+            return ArmorSlot.LEGGINGS;
+        }
+        if (this.isSimilarItem(snapshot, inventory.getBoots())) {
+            return ArmorSlot.BOOTS;
+        }
+        return null;
     }
 
-    private boolean isKowalSetItem(final ItemStack itemStack) {
-        if (this.isAir(itemStack)) {
-            return false;
-        }
-        return ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, itemStack, "upgrade-level").isPresent()
-            || ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, itemStack, "upgrade-effect").isPresent()
-            || ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, itemStack, "display-name").isPresent();
+    private ItemStack getArmorItem(final PlayerInventory inventory, final ArmorSlot slot) {
+        return switch (slot) {
+            case HELMET -> inventory.getHelmet();
+            case CHESTPLATE -> inventory.getChestplate();
+            case LEGGINGS -> inventory.getLeggings();
+            case BOOTS -> inventory.getBoots();
+        };
     }
 
-    private boolean isSameItem(final ItemStack first, final ItemStack second) {
+    private void setArmorItem(final PlayerInventory inventory, final ArmorSlot slot, final ItemStack itemStack) {
+        final ItemStack item = this.isAir(itemStack) ? new ItemStack(Material.AIR) : itemStack;
+        switch (slot) {
+            case HELMET -> inventory.setHelmet(item);
+            case CHESTPLATE -> inventory.setChestplate(item);
+            case LEGGINGS -> inventory.setLeggings(item);
+            case BOOTS -> inventory.setBoots(item);
+        }
+    }
+
+    private boolean isSimilarItem(final ItemStack first, final ItemStack second) {
         if (this.isAir(first) || this.isAir(second)) {
-            return false;
-        }
-        if (first.getType() != second.getType()) {
             return false;
         }
         return first.isSimilar(second);
@@ -130,9 +167,11 @@ public class CitizensBypassService {
         return itemStack.clone();
     }
 
-    private boolean isDebugEnabled() {
+    private void logDebug(final String message) {
         final PluginConfig.CitizensSettings citizensSettings = this.pluginConfig.citizens;
-        return citizensSettings != null && citizensSettings.debug;
+        if (citizensSettings != null && citizensSettings.debug) {
+            this.plugin.getLogger().info(message);
+        }
     }
 
     @Inject
@@ -150,17 +189,14 @@ public class CitizensBypassService {
         BOOTS
     }
 
-    private record ArmorMatch(ArmorSlot slot, ItemStack item) {
-        void clear(final PlayerInventory inventory) {
-            switch (this.slot) {
-                case HELMET -> inventory.setHelmet(new ItemStack(Material.AIR));
-                case CHESTPLATE -> inventory.setChestplate(new ItemStack(Material.AIR));
-                case LEGGINGS -> inventory.setLeggings(new ItemStack(Material.AIR));
-                case BOOTS -> inventory.setBoots(new ItemStack(Material.AIR));
-            }
-        }
+    private enum SourceType {
+        HAND,
+        ARMOR
     }
 
-    private record BypassEntry(long expiresAt, ItemStack snapshot) {
+    private record Source(SourceType type, ArmorSlot armorSlot, ItemStack item) {
+    }
+
+    private record BypassEntry(long expiresAt, long createdAt, int heldSlot, ItemStack handBefore, ArmorSlot armorSlot, ItemStack armorBefore) {
     }
 }
