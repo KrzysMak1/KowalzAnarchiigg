@@ -16,6 +16,7 @@ import cc.dreamcode.kowal.controller.EffectController;
 import cc.dreamcode.kowal.controller.PlayerController;
 import cc.dreamcode.kowal.controller.ArmorEquipController;
 import cc.dreamcode.kowal.controller.DamageController;
+import cc.dreamcode.kowal.controller.FancyNpcController;
 import cc.dreamcode.kowal.tasks.ParticleTask;
 import java.util.function.Consumer;
 import cc.dreamcode.platform.bukkit.hook.PluginHookManager;
@@ -87,6 +88,7 @@ public final class KowalPlugin extends DreamBukkitPlatform implements DreamBukki
         componentService.registerComponent(DamageController.class);
         componentService.registerComponent(ArmorEquipController.class);
         componentService.registerComponent(PlayerController.class);
+        componentService.registerComponent(FancyNpcController.class);
         componentService.registerComponent(EffectController.class);
         componentService.registerComponent(KowalCommand.class);
         this.getInject(PluginConfig.class).ifPresent(this::validateConfig);
