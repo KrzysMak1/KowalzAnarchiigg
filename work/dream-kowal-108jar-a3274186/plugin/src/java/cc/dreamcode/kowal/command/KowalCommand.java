@@ -23,22 +23,20 @@ import cc.dreamcode.command.annotation.Executor;
 import org.bukkit.entity.HumanEntity;
 import cc.dreamcode.kowal.menu.KowalMenu;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Entity;
 import cc.dreamcode.kowal.ParticleCache;
 import cc.dreamcode.kowal.config.MessageConfig;
 import cc.dreamcode.kowal.config.PluginConfig;
 import cc.dreamcode.kowal.KowalPlugin;
 import cc.dreamcode.command.annotation.Command;
 import cc.dreamcode.command.CommandBase;
-import org.bukkit.util.RayTraceResult;
 
 @Command(name = "kowal")
 public class KowalCommand implements CommandBase
 {
-    private static final int NPC_TARGET_RANGE = 8;
     private final KowalPlugin plugin;
     private final PluginConfig pluginConfig;
     private final MessageConfig messageConfig;
+    private final cc.dreamcode.kowal.npc.NpcSelectionService npcSelectionService;
     
     @Executor(description = "Otwiera gui kowala.")
     void gui(final Player sender) {
@@ -120,27 +118,10 @@ public class KowalCommand implements CommandBase
     @Permission("dream-kowal.npc")
     @Executor(path = "npc", description = "Ustawia npc do otwierania gui kowala.")
     BukkitNotice npc(final Player sender) {
-        final Entity target = this.findTargetEntity(sender);
-        if (target == null) {
-            return this.messageConfig.npcNotFound;
-        }
-        this.pluginConfig.fancyNpcUuid = target.getUniqueId().toString();
-        this.pluginConfig.save();
-        return this.messageConfig.npcSet.with("uuid", target.getUniqueId().toString());
+        this.npcSelectionService.requestSelection(sender);
+        return this.messageConfig.npcSelectPrompt;
     }
 
-    private Entity findTargetEntity(final Player sender) {
-        final Entity directTarget = sender.getTargetEntity(NPC_TARGET_RANGE);
-        if (directTarget != null) {
-            return directTarget;
-        }
-        final RayTraceResult rayTraceResult = sender.rayTraceEntities(NPC_TARGET_RANGE);
-        if (rayTraceResult == null) {
-            return null;
-        }
-        return rayTraceResult.getHitEntity();
-    }
-    
     @Permission("dream-kowal.reload")
     @Executor(path = "reload", description = "Przeladowuje konfiguracje.")
     BukkitNotice reload() {
@@ -162,9 +143,10 @@ public class KowalCommand implements CommandBase
     
     @Inject
     @Generated
-    public KowalCommand(final KowalPlugin plugin, final PluginConfig pluginConfig, final MessageConfig messageConfig) {
+    public KowalCommand(final KowalPlugin plugin, final PluginConfig pluginConfig, final MessageConfig messageConfig, final cc.dreamcode.kowal.npc.NpcSelectionService npcSelectionService) {
         this.plugin = plugin;
         this.pluginConfig = pluginConfig;
         this.messageConfig = messageConfig;
+        this.npcSelectionService = npcSelectionService;
     }
 }

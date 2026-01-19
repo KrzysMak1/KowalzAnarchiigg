@@ -82,6 +82,9 @@ command-upgrade-success:
 command-npc-not-found:
   type: CHAT
   text: "&cMusisz patrzec na NPC."
+command-npc-select:
+  type: CHAT
+  text: "&aKliknij teraz NPC, aby przypisac go do kowala."
 command-npc-set:
   type: CHAT
   text: "&aUstawiono NPC kowala. &7UUID: &f{uuid}"
