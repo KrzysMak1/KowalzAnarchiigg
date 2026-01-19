@@ -65,6 +65,8 @@ public class MessageConfig extends OkaeriConfig
     public BukkitNotice commandUpgradeSuccess;
     @CustomKey("command-npc-not-found")
     public BukkitNotice npcNotFound;
+    @CustomKey("command-npc-select")
+    public BukkitNotice npcSelectPrompt;
     @CustomKey("command-npc-set")
     public BukkitNotice npcSet;
     @CustomKey("effect-arrow-use")
@@ -102,6 +104,7 @@ public class MessageConfig extends OkaeriConfig
         this.commandUpgradeLevelError = BukkitNotice.chat("&cPoziom ulepszenia nie moze byc wyzszy niz 7.");
         this.commandUpgradeSuccess = BukkitNotice.chat("&aUlepszono przedmiot w rece na poziom &2{level}&a.");
         this.npcNotFound = BukkitNotice.chat("&cMusisz patrzec na NPC.");
+        this.npcSelectPrompt = BukkitNotice.chat("&aKliknij teraz NPC, aby przypisac go do kowala.");
         this.npcSet = BukkitNotice.chat("&aUstawiono NPC kowala. &7UUID: &f{uuid}");
         this.arrowUse = BukkitNotice.chat("&aStrzala zostala odbita!");
         this.damageUsePlayer = BukkitNotice.chat("&aZadane obrazenia zostaly odbite!");
