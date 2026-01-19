@@ -23,6 +23,7 @@ import cc.dreamcode.command.annotation.Executor;
 import org.bukkit.entity.HumanEntity;
 import cc.dreamcode.kowal.menu.KowalMenu;
 import org.bukkit.entity.Player;
+import cc.dreamcode.kowal.ParticleCache;
 import cc.dreamcode.kowal.config.MessageConfig;
 import cc.dreamcode.kowal.config.PluginConfig;
 import cc.dreamcode.kowal.KowalPlugin;
@@ -120,6 +121,10 @@ public class KowalCommand implements CommandBase
         try {
             this.messageConfig.load();
             this.pluginConfig.load();
+            this.plugin.getInject(ParticleCache.class).ifPresent(particleCache -> {
+                particleCache.clear();
+                particleCache.checkOnline();
+            });
             return this.messageConfig.reloaded.with("time", TimeUtil.format(System.currentTimeMillis() - time));
         }
         catch (final NullPointerException | OkaeriException e) {
