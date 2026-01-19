@@ -41,7 +41,14 @@ public class KowalCommand implements CommandBase
     
     @Executor(description = "Otwiera gui kowala.")
     void gui(final Player sender) {
-        this.citizensBypassService.applyBypassIfActive(sender);
+        final boolean handledBypass = this.citizensBypassService.scheduleNpcOpenIfActive(sender, input -> {
+            final KowalMenu kowalMenu = this.plugin.createInstance(KowalMenu.class);
+            kowalMenu.setInput(input);
+            kowalMenu.build((HumanEntity)sender).open((HumanEntity)sender);
+        });
+        if (handledBypass) {
+            return;
+        }
         final KowalMenu kowalMenu = this.plugin.createInstance(KowalMenu.class);
         kowalMenu.build((HumanEntity)sender).open((HumanEntity)sender);
     }

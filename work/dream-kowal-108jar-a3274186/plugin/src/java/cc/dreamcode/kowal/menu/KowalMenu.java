@@ -26,6 +26,7 @@ import cc.dreamcode.kowal.KowalPlugin;
 import cc.dreamcode.menu.adventure.setup.BukkitMenuPlayerSetup;
 import cc.dreamcode.kowal.util.UpgradeUtil;
 import java.util.regex.Pattern;
+import org.jetbrains.annotations.Nullable;
 
 public class KowalMenu implements BukkitMenuPlayerSetup
 {
@@ -35,6 +36,7 @@ public class KowalMenu implements BukkitMenuPlayerSetup
     private final MessageConfig messageConfig;
     private final PluginHookManager pluginHookManager;
     private KowalMenuMode mode;
+    private @Nullable ItemStack input;
     
     @Override
     public BukkitMenu build(@NonNull final HumanEntity humanEntity) {
@@ -48,7 +50,7 @@ public class KowalMenu implements BukkitMenuPlayerSetup
         final BukkitMenuBuilder builder = this.pluginConfig.kowalMenu;
         final BukkitMenu bukkitMenu = builder.buildEmpty();
         bukkitMenu.setDisposeWhenClose(true);
-        final ItemStack hand = humanEntity.getInventory().getItemInMainHand();
+        final ItemStack hand = this.input != null ? this.input : humanEntity.getInventory().getItemInMainHand();
         final Object levelValue = ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, hand, "upgrade-level").orElse("0");
         final int currentLevel = UpgradeUtil.parseLevel(levelValue);
         if (hand.getType().equals((Object)Material.AIR) || this.pluginConfig.kowalItems == null || !this.pluginConfig.kowalItems.containsKey((Object)hand.getType()) || currentLevel >= 7) {
@@ -108,7 +110,8 @@ public class KowalMenu implements BukkitMenuPlayerSetup
             }
             bukkitMenu.setItem((int)slot, ItemBuilder.of(item).fixColors().toItemStack());
         });
-        bukkitMenu.setItem(this.pluginConfig.upgradeItemSlot, humanEntity.getInventory().getItemInMainHand().clone(), (Consumer<InventoryClickEvent>)(event -> event.setCancelled(true)));
+        final ItemStack inputItem = this.input != null ? this.input : humanEntity.getInventory().getItemInMainHand().clone();
+        bukkitMenu.setItem(this.pluginConfig.upgradeItemSlot, inputItem, (Consumer<InventoryClickEvent>)(event -> event.setCancelled(true)));
         return bukkitMenu;
     }
     
@@ -156,5 +159,9 @@ public class KowalMenu implements BukkitMenuPlayerSetup
     @Generated
     public void setMode(final KowalMenuMode mode) {
         this.mode = mode;
+    }
+
+    public void setInput(@Nullable final ItemStack input) {
+        this.input = input;
     }
 }
