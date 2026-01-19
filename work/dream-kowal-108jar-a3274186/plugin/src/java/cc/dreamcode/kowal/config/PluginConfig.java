@@ -93,12 +93,9 @@ public class PluginConfig extends OkaeriConfig
     @Comments({ @Comment, @Comment({ "Lista mozliwych particlesow dla pelnego seta 6 lub 7 poziomu (losowane przy zalozeniu pelnego seta lub mieszanego 6/7)." }) })
     @CustomKey("particles")
     public List<Particle> particles;
-    @Comments({ @Comment, @Comment({ "Ustawienia ogolne pluginu." }) })
-    @CustomKey("settings")
-    public Settings settings;
-    @Comments({ @Comment, @Comment({ "Ustawienia FancyNpcs do otwierania GUI kowala." }) })
-    @CustomKey("npc")
-    public NpcSettings npc;
+    @Comments({ @Comment, @Comment({ "Ustawienia Citizens do bypassu auto-equip." }) })
+    @CustomKey("citizens")
+    public CitizensSettings citizens;
     
     public PluginConfig() {
         this.kowalMenu = new BukkitMenuBuilder("&8Kowal", 3, new MapBuilder<Integer, ItemStack>().put(11, ItemBuilder.of(Material.RED_DYE).setName("&cAnuluj").toItemStack()).put(15, ItemBuilder.of(Material.LIME_DYE).setName("&2Zwieksz poziom").setLore("&7Ulepszenie: &a+{level} \u2192 &a+{new}", " ", "&7Wymagane ulepszacze:", "{items}", "{cost}", " ", "{status}").toItemStack()).build());
@@ -124,37 +121,26 @@ public class PluginConfig extends OkaeriConfig
         this.upgradeSuccess = "BLOCK_ANVIL_BREAK";
         this.upgradeFailure = "ENTITY_ITEM_BREAK";
         this.particles = List.of(Particle.HAPPY_VILLAGER);
-        this.settings = new Settings();
-        this.npc = new NpcSettings();
+        this.citizens = new CitizensSettings();
     }
 
-    public static class Settings extends OkaeriConfig {
-        @Comment("ID NPC z FancyNpcs (NpcData id). Sprawdz komenda /fnpc list lub /fnpc info <id>.")
-        @CustomKey("npcId")
-        public String npcId;
-
-        public Settings() {
-            this.npcId = "";
-        }
-    }
-
-    public static class NpcSettings extends OkaeriConfig {
-        @Comment("Czy NPC ma otwierac GUI kowala po kliknieciu PPM.")
+    public static class CitizensSettings extends OkaeriConfig {
+        @Comment("Czy integracja Citizens jest aktywna.")
         @CustomKey("enabled")
         public boolean enabled;
 
-        @Comment("Lista UUID FancyNPC, ktore maja otwierac GUI kowala.")
-        @CustomKey("uuids")
-        public List<String> uuids;
+        @Comment("Lista Citizens NPC IDs, dla ktorych bypassujemy auto-equip.")
+        @CustomKey("bypassSetNpcIds")
+        public List<Integer> bypassSetNpcIds;
 
-        @Comment("Czy obslugiwac tylko klik z main-hand (true = ignoruj offhand).")
-        @CustomKey("mainHandOnly")
-        public boolean mainHandOnly;
+        @Comment("Czy wlaczyc logi debug integracji Citizens.")
+        @CustomKey("debug")
+        public boolean debug;
 
-        public NpcSettings() {
+        public CitizensSettings() {
             this.enabled = true;
-            this.uuids = new ArrayList<>();
-            this.mainHandOnly = true;
+            this.bypassSetNpcIds = new ArrayList<>();
+            this.debug = false;
         }
     }
 }

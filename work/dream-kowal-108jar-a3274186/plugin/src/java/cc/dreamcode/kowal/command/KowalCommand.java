@@ -27,7 +27,7 @@ import cc.dreamcode.kowal.ParticleCache;
 import cc.dreamcode.kowal.config.MessageConfig;
 import cc.dreamcode.kowal.config.PluginConfig;
 import cc.dreamcode.kowal.KowalPlugin;
-import cc.dreamcode.kowal.npc.NpcUuidRegistry;
+import cc.dreamcode.kowal.citizens.CitizensBypassService;
 import cc.dreamcode.command.annotation.Command;
 import cc.dreamcode.command.CommandBase;
 
@@ -37,11 +37,11 @@ public class KowalCommand implements CommandBase
     private final KowalPlugin plugin;
     private final PluginConfig pluginConfig;
     private final MessageConfig messageConfig;
-    private final cc.dreamcode.kowal.npc.NpcSelectionService npcSelectionService;
-    private final NpcUuidRegistry npcUuidRegistry;
+    private final CitizensBypassService citizensBypassService;
     
     @Executor(description = "Otwiera gui kowala.")
     void gui(final Player sender) {
+        this.citizensBypassService.applyBypassIfActive(sender);
         final KowalMenu kowalMenu = this.plugin.createInstance(KowalMenu.class);
         kowalMenu.build((HumanEntity)sender).open((HumanEntity)sender);
     }
@@ -117,13 +117,6 @@ public class KowalCommand implements CommandBase
         return this.messageConfig.commandUpgradeSuccess.with("level", level);
     }
 
-    @Permission("dream-kowal.npc")
-    @Executor(path = "npc", description = "Ustawia npc do otwierania gui kowala.")
-    BukkitNotice npc(final Player sender) {
-        this.npcSelectionService.requestSelection(sender);
-        return this.messageConfig.npcSelectPrompt;
-    }
-
     @Permission("dream-kowal.reload")
     @Executor(path = "reload", description = "Przeladowuje konfiguracje.")
     BukkitNotice reload() {
@@ -131,7 +124,6 @@ public class KowalCommand implements CommandBase
         try {
             this.messageConfig.load();
             this.pluginConfig.load();
-            this.npcUuidRegistry.reload();
             this.plugin.getInject(ParticleCache.class).ifPresent(particleCache -> {
                 particleCache.clear();
                 particleCache.checkOnline();
@@ -146,11 +138,10 @@ public class KowalCommand implements CommandBase
     
     @Inject
     @Generated
-    public KowalCommand(final KowalPlugin plugin, final PluginConfig pluginConfig, final MessageConfig messageConfig, final cc.dreamcode.kowal.npc.NpcSelectionService npcSelectionService, final NpcUuidRegistry npcUuidRegistry) {
+    public KowalCommand(final KowalPlugin plugin, final PluginConfig pluginConfig, final MessageConfig messageConfig, final CitizensBypassService citizensBypassService) {
         this.plugin = plugin;
         this.pluginConfig = pluginConfig;
         this.messageConfig = messageConfig;
-        this.npcSelectionService = npcSelectionService;
-        this.npcUuidRegistry = npcUuidRegistry;
+        this.citizensBypassService = citizensBypassService;
     }
 }

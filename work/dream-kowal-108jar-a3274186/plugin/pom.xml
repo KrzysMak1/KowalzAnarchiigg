@@ -26,7 +26,7 @@
         <adventure.platform.bukkit.version>4.4.1</adventure.platform.bukkit.version>
         <adventure.version>4.25.0</adventure.version>
         <dreamcode.platform.version>1.13.8</dreamcode.platform.version>
-        <fancynpcs.version>2.9.0</fancynpcs.version>
+        <citizens.version>2.0.41-SNAPSHOT</citizens.version>
     </properties>
 
     <repositories>
@@ -55,8 +55,8 @@
             <url>https://storehouse.okaeri.eu/repository/maven-releases/</url>
         </repository>
         <repository>
-            <id>fancyinnovations-releases</id>
-            <url>https://repo.fancyinnovations.com/releases</url>
+            <id>citizens</id>
+            <url>https://repo.citizensnpcs.co/</url>
         </repository>
     </repositories>
 
@@ -199,9 +199,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>de.oliver</groupId>
-            <artifactId>FancyNpcs</artifactId>
-            <version>${fancynpcs.version}</version>
+            <groupId>net.citizensnpcs</groupId>
+            <artifactId>citizensapi</artifactId>
+            <version>${citizens.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
