@@ -9,6 +9,7 @@ import cc.dreamcode.kowal.effect.EffectType;
 import org.bukkit.Material;
 import cc.dreamcode.kowal.level.Level;
 import java.util.Map;
+import java.util.List;
 import org.bukkit.inventory.ItemStack;
 import eu.okaeri.configs.annotation.CustomKey;
 import eu.okaeri.configs.annotation.Comment;
@@ -91,6 +92,9 @@ public class PluginConfig extends OkaeriConfig
     @Comments({ @Comment, @Comment({ "Jakie maja byc particle gdy gracz ma pelny set 6 lub 7 poziomu?" }) })
     @CustomKey("particles")
     public Particle particle;
+    @Comments({ @Comment, @Comment({ "Lista mozliwych particlesow dla pelnego seta 7 poziomu (losowane przy zalozeniu pelnego seta)." }) })
+    @CustomKey("particles-level-seven")
+    public List<Particle> particlesLevelSeven;
     
     public PluginConfig() {
         this.kowalMenu = new BukkitMenuBuilder("&8Kowal", 3, new MapBuilder<Integer, ItemStack>().put(11, ItemBuilder.of(Material.RED_DYE).setName("&cAnuluj").toItemStack()).put(15, ItemBuilder.of(Material.LIME_DYE).setName("&2Zwieksz poziom").setLore("&7Ulepszenie: &a+{level} \u2192 &a+{new}", " ", "&7Wymagane ulepszacze:", "{items}", "{cost}", " ", "{status}").toItemStack()).build());
@@ -116,5 +120,6 @@ public class PluginConfig extends OkaeriConfig
         this.upgradeSuccess = "BLOCK_ANVIL_BREAK";
         this.upgradeFailure = "ENTITY_ITEM_BREAK";
         this.particle = Particle.HAPPY_VILLAGER;
+        this.particlesLevelSeven = List.of(Particle.HAPPY_VILLAGER);
     }
 }
