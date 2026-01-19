@@ -33,6 +33,7 @@ public class DamageController implements Listener
         }
         final Player player = (Player)event.getEntity();
         double reduce = 0.0;
+        double reducePercent = 0.0;
         int chance = 0;
         for (final ItemStack armor : player.getInventory().getArmorContents()) {
             if (armor == null) {
@@ -45,6 +46,7 @@ public class DamageController implements Listener
                 final Level level = (Level)this.pluginConfig.kowalLevels.get((Object)currentLevel);
                 if (level != null) {
                     reduce += level.getHpReduce();
+                    reducePercent += level.getHpReducePercent();
                 }
             }
             if (upgrade.equals((Object)EffectType.DAMAGE.getData()) && this.pluginConfig.effects != null) {
@@ -61,7 +63,11 @@ public class DamageController implements Listener
             this.messageConfig.damageUseDamager.send((CommandSender)damager);
             return;
         }
-        event.setDamage(Math.max(0.0, event.getDamage() - reduce));
+        double damage = event.getDamage();
+        if (reducePercent > 0.0) {
+            damage -= event.getDamage() * (reducePercent / 100.0);
+        }
+        event.setDamage(Math.max(0.0, damage - reduce));
     }
     
     @Inject

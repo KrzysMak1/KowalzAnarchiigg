@@ -34,6 +34,7 @@ public class LevelSerializer implements ObjectSerializer<Level>
         data.add("money-upgrade", object.getMoneyUpgrade());
         data.add("display-lore", object.getItemLoreDisplay());
         data.add("hp-reduce", object.getHpReduce());
+        data.add("hp-reduce-percent", object.getHpReducePercent());
         data.add("chance", object.getChance());
     }
     
@@ -45,6 +46,16 @@ public class LevelSerializer implements ObjectSerializer<Level>
         if (generics == null) {
             throw new NullPointerException("generics is marked non-null but is null");
         }
-        return new Level(data.getAsMap("upgrade-items", Material.class, Integer.class), data.get("upgrade-items-lore", String.class), data.get("cost-lore", String.class), data.get("money-upgrade", Double.class), data.get("display-lore", String.class), data.get("hp-reduce", Double.class), data.get("chance", Integer.class));
+        final Double hpReduce = data.get("hp-reduce", Double.class);
+        final Double hpReducePercent = data.get("hp-reduce-percent", Double.class);
+        return new Level(
+                data.getAsMap("upgrade-items", Material.class, Integer.class),
+                data.get("upgrade-items-lore", String.class),
+                data.get("cost-lore", String.class),
+                data.get("money-upgrade", Double.class),
+                data.get("display-lore", String.class),
+                hpReduce == null ? 0.0 : hpReduce,
+                hpReducePercent == null ? 0.0 : hpReducePercent,
+                data.get("chance", Integer.class));
     }
 }
