@@ -23,6 +23,7 @@ import cc.dreamcode.command.annotation.Executor;
 import org.bukkit.entity.HumanEntity;
 import cc.dreamcode.kowal.menu.KowalMenu;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Entity;
 import cc.dreamcode.kowal.ParticleCache;
 import cc.dreamcode.kowal.config.MessageConfig;
 import cc.dreamcode.kowal.config.PluginConfig;
@@ -112,6 +113,18 @@ public class KowalCommand implements CommandBase
         }
         sender.getInventory().setItemInMainHand(newItem.toItemStack());
         return this.messageConfig.commandUpgradeSuccess.with("level", level);
+    }
+
+    @Permission("dream-kowal.npc")
+    @Executor(path = "npc", description = "Ustawia npc do otwierania gui kowala.")
+    BukkitNotice npc(final Player sender) {
+        final Entity target = sender.getTargetEntity(5);
+        if (target == null) {
+            return this.messageConfig.npcNotFound;
+        }
+        this.pluginConfig.fancyNpcUuid = target.getUniqueId().toString();
+        this.pluginConfig.save();
+        return this.messageConfig.npcSet.with("uuid", target.getUniqueId().toString());
     }
     
     @Permission("dream-kowal.reload")

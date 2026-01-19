@@ -24,3 +24,6 @@ permissions:
   dream-kowal.reload:
     description: Przeladowuje konfiguracje.
     default: op
+  dream-kowal.npc:
+    description: Ustawia NPC otwierajacego GUI kowala.
+    default: op
