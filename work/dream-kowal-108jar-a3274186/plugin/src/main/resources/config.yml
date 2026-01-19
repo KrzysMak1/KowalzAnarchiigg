@@ -212,5 +212,5 @@ upgrade-failure-sound: ENTITY_ITEM_BREAK
 particles:
   - HAPPY_VILLAGER
 
-# ID FancyNPC, ktore ma otwierac GUI kowala po kliknieciu PPM (puste = wylaczone).
-fancy-npc-id: ""
+# UUID FancyNPC, ktore ma otwierac GUI kowala po kliknieciu PPM (puste = wylaczone).
+fancy-npc-uuid: ""
