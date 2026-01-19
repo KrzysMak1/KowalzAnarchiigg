@@ -59,6 +59,14 @@ public class Level
     public int getChance() {
         return this.chance;
     }
+
+    public boolean hasUpgradeItems() {
+        return this.upgradeItems != null && !this.upgradeItems.isEmpty();
+    }
+
+    public boolean hasMoneyUpgrade() {
+        return this.moneyUpgrade > 0.0;
+    }
     
     @Generated
     @Override

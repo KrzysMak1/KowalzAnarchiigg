@@ -117,6 +117,9 @@ public class KowalMenu implements BukkitMenuPlayerSetup
     }
 
     private boolean hasRequiredItems(final Player player, final Level level) {
+        if (!level.hasUpgradeItems()) {
+            return true;
+        }
         for (final Map.Entry<Material, Integer> entry : level.getUpgradeItems().entrySet()) {
             if (!player.getInventory().containsAtLeast(new ItemStack((Material)entry.getKey()), (int)entry.getValue())) {
                 return false;
@@ -126,6 +129,9 @@ public class KowalMenu implements BukkitMenuPlayerSetup
     }
 
     private boolean hasRequiredMoney(final Player player, final Level level) {
+        if (!level.hasMoneyUpgrade()) {
+            return true;
+        }
         final double money = (double)this.pluginHookManager.get(VaultHook.class).map(vaultHook -> (Double)vaultHook.getMoney(player).orElse(0.0)).orElse(0.0);
         return money >= level.getMoneyUpgrade();
     }

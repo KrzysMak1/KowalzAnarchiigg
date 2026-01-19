@@ -130,7 +130,12 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
     }
     
     private void removeItems(final Player player) {
-        this.pluginHookManager.get(VaultHook.class).map(vaultHook -> vaultHook.withdraw(player, this.level.getMoneyUpgrade()));
+        if (this.level.hasMoneyUpgrade()) {
+            this.pluginHookManager.get(VaultHook.class).map(vaultHook -> vaultHook.withdraw(player, this.level.getMoneyUpgrade()));
+        }
+        if (!this.level.hasUpgradeItems()) {
+            return;
+        }
         this.level.getUpgradeItems().forEach((item, amount) -> player.getInventory().removeItem(new ItemStack[] { new ItemStack(item, (int)amount) }));
     }
 

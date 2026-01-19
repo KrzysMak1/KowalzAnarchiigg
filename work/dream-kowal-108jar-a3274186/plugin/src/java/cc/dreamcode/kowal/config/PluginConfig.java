@@ -92,6 +92,9 @@ public class PluginConfig extends OkaeriConfig
     @Comments({ @Comment, @Comment({ "Lista mozliwych particlesow dla pelnego seta 6 lub 7 poziomu (losowane przy zalozeniu pelnego seta lub mieszanego 6/7)." }) })
     @CustomKey("particles")
     public List<Particle> particles;
+    @Comments({ @Comment, @Comment({ "ID FancyNPC, ktore ma otwierac GUI kowala po kliknieciu PPM (puste = wylaczone)." }) })
+    @CustomKey("fancy-npc-id")
+    public String fancyNpcId;
     
     public PluginConfig() {
         this.kowalMenu = new BukkitMenuBuilder("&8Kowal", 3, new MapBuilder<Integer, ItemStack>().put(11, ItemBuilder.of(Material.RED_DYE).setName("&cAnuluj").toItemStack()).put(15, ItemBuilder.of(Material.LIME_DYE).setName("&2Zwieksz poziom").setLore("&7Ulepszenie: &a+{level} \u2192 &a+{new}", " ", "&7Wymagane ulepszacze:", "{items}", "{cost}", " ", "{status}").toItemStack()).build());
@@ -117,5 +120,6 @@ public class PluginConfig extends OkaeriConfig
         this.upgradeSuccess = "BLOCK_ANVIL_BREAK";
         this.upgradeFailure = "ENTITY_ITEM_BREAK";
         this.particles = List.of(Particle.HAPPY_VILLAGER);
+        this.fancyNpcId = "";
     }
 }

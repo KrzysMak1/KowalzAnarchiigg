@@ -204,3 +204,6 @@ upgrade-success-sound: BLOCK_ANVIL_BREAK
 upgrade-failure-sound: ENTITY_ITEM_BREAK
 particles:
   - HAPPY_VILLAGER
+
+# ID FancyNPC, ktore ma otwierac GUI kowala po kliknieciu PPM (puste = wylaczone).
+fancy-npc-id: ""
