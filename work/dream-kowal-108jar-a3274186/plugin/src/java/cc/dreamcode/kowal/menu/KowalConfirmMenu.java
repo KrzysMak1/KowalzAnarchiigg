@@ -51,7 +51,11 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
         bukkitMenu.setDisposeWhenClose(true);
         builder.getItems().forEach((slot, item) -> {
             if (this.pluginConfig.confirmCancelSlot == slot) {
-                bukkitMenu.setItem((int)slot, ItemBuilder.of(item).fixColors().toItemStack(), (Consumer<InventoryClickEvent>)(event -> event.getWhoClicked().closeInventory()));
+                bukkitMenu.setItem((int)slot, ItemBuilder.of(item).fixColors().toItemStack(), (Consumer<InventoryClickEvent>)(event -> {
+                    final KowalMenu kowalMenu = this.plugin.createInstance(KowalMenu.class);
+                    kowalMenu.setMode(this.mode);
+                    kowalMenu.build(event.getWhoClicked()).open(event.getWhoClicked());
+                }));
                 return;
             }
             bukkitMenu.setItem((int)slot, ItemBuilder.of(item).fixColors().toItemStack());

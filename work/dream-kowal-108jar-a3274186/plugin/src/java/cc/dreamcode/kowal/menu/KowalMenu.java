@@ -25,9 +25,11 @@ import cc.dreamcode.kowal.config.PluginConfig;
 import cc.dreamcode.kowal.KowalPlugin;
 import cc.dreamcode.menu.adventure.setup.BukkitMenuPlayerSetup;
 import cc.dreamcode.kowal.util.UpgradeUtil;
+import java.util.regex.Pattern;
 
 public class KowalMenu implements BukkitMenuPlayerSetup
 {
+    private static final Pattern COLOR_PATTERN = Pattern.compile("(?i)[&§][0-9A-FK-OR]");
     private final KowalPlugin plugin;
     private final PluginConfig pluginConfig;
     private final MessageConfig messageConfig;
@@ -85,7 +87,9 @@ public class KowalMenu implements BukkitMenuPlayerSetup
                 return;
             }
             if (this.pluginConfig.upgradeAcceptSlot == slot) {
-                bukkitMenu.setItem((int)slot, ItemBuilder.of(item).fixColors(Map.of("level", currentLevel, "new", currentLevel + 1, "items", level.getUpgradeItemsLore(), "cost", level.getCostLore(), "status", this.canAfford(player, level) ? this.pluginConfig.canUpgradeStatus : this.pluginConfig.cannotUpgradeStatus)).toItemStack(), (Consumer<InventoryClickEvent>)(event -> {
+                final boolean hasRequiredItems = this.hasRequiredItems(player, level);
+                final boolean hasRequiredMoney = this.hasRequiredMoney(player, level);
+                bukkitMenu.setItem((int)slot, ItemBuilder.of(item).fixColors(Map.of("level", currentLevel, "new", currentLevel + 1, "items", this.colorizeLoreLine(level.getUpgradeItemsLore(), hasRequiredItems), "cost", this.colorizeLoreLine(level.getCostLore(), hasRequiredMoney), "status", this.canAfford(player, level) ? this.pluginConfig.canUpgradeStatus : this.pluginConfig.cannotUpgradeStatus)).toItemStack(), (Consumer<InventoryClickEvent>)(event -> {
                     if (!this.canAfford(player, level)) {
                         player.closeInventory();
                         this.messageConfig.cannotAfford.send((CommandSender)player);
@@ -109,18 +113,28 @@ public class KowalMenu implements BukkitMenuPlayerSetup
     }
     
     private boolean canAfford(final Player player, final Level level) {
-        boolean afford = true;
+        return this.hasRequiredItems(player, level) && this.hasRequiredMoney(player, level);
+    }
+
+    private boolean hasRequiredItems(final Player player, final Level level) {
         for (final Map.Entry<Material, Integer> entry : level.getUpgradeItems().entrySet()) {
             if (!player.getInventory().containsAtLeast(new ItemStack((Material)entry.getKey()), (int)entry.getValue())) {
-                afford = false;
-                break;
+                return false;
             }
         }
+        return true;
+    }
+
+    private boolean hasRequiredMoney(final Player player, final Level level) {
         final double money = (double)this.pluginHookManager.get(VaultHook.class).map(vaultHook -> (Double)vaultHook.getMoney(player).orElse(0.0)).orElse(0.0);
-        if (money < level.getMoneyUpgrade()) {
-            afford = false;
+        return money >= level.getMoneyUpgrade();
+    }
+
+    private String colorizeLoreLine(final String line, final boolean canAfford) {
+        if (line == null || line.isBlank() || canAfford) {
+            return line;
         }
-        return afford;
+        return "&c" + COLOR_PATTERN.matcher(line).replaceAll("");
     }
     
     @Inject
@@ -131,5 +145,10 @@ public class KowalMenu implements BukkitMenuPlayerSetup
         this.pluginConfig = pluginConfig;
         this.messageConfig = messageConfig;
         this.pluginHookManager = pluginHookManager;
+    }
+
+    @Generated
+    public void setMode(final KowalMenuMode mode) {
+        this.mode = mode;
     }
 }
