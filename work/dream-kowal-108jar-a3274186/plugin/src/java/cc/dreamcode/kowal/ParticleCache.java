@@ -71,20 +71,14 @@ public class ParticleCache
             throw new NullPointerException("player is marked non-null but is null");
         }
         final UUID uuid = player.getUniqueId();
-        if (this.hasArmor(player, 7)) {
+        if (this.hasArmor(player, 6)) {
             final Particle currentParticle = this.particleEffect.get(uuid);
-            if (currentParticle == null || !this.isLevelSevenParticle(currentParticle)) {
-                this.selectLevelSevenParticle().ifPresent(particle -> this.add(uuid, particle));
+            if (currentParticle == null || !this.isConfiguredParticle(currentParticle)) {
+                this.selectParticle().ifPresent(particle -> this.add(uuid, particle));
             }
             return;
         }
         this.remove(uuid);
-        if (this.hasArmor(player, 6)) {
-            if (this.pluginConfig.particle != null) {
-                this.add(uuid, this.pluginConfig.particle);
-                return;
-            }
-        }
     }
     
     public void checkOnline() {
@@ -111,22 +105,19 @@ public class ParticleCache
         this.particleEffect.clear();
     }
 
-    private Optional<Particle> selectLevelSevenParticle() {
-        final List<Particle> particles = this.pluginConfig.particlesLevelSeven;
+    private Optional<Particle> selectParticle() {
+        final List<Particle> particles = this.pluginConfig.particles;
         if (particles == null || particles.isEmpty()) {
-            return Optional.ofNullable(this.pluginConfig.particle);
+            return Optional.empty();
         }
         return Optional.of(particles.get(RandomUtil.nextInteger(particles.size())));
     }
 
-    private boolean isLevelSevenParticle(@NonNull final Particle particle) {
+    private boolean isConfiguredParticle(@NonNull final Particle particle) {
         if (particle == null) {
             throw new NullPointerException("particle is marked non-null but is null");
         }
-        final List<Particle> particles = this.pluginConfig.particlesLevelSeven;
-        if (particles == null || particles.isEmpty()) {
-            return particle == this.pluginConfig.particle;
-        }
-        return particles.contains(particle);
+        final List<Particle> particles = this.pluginConfig.particles;
+        return particles != null && particles.contains(particle);
     }
 }

@@ -16,7 +16,7 @@ public class ParticleTask implements Runnable
     private final ParticleCache particleCache;
     
     public void run() {
-        if (this.pluginConfig.particle == null && (this.pluginConfig.particlesLevelSeven == null || this.pluginConfig.particlesLevelSeven.isEmpty())) {
+        if (this.pluginConfig.particles == null || this.pluginConfig.particles.isEmpty()) {
             return;
         }
         this.particleCache.entries().forEach(entry -> {

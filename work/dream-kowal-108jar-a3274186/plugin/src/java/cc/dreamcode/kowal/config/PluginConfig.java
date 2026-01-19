@@ -89,12 +89,9 @@ public class PluginConfig extends OkaeriConfig
     @Comments({ @Comment, @Comment({ "Jaki ma sie odtworzyc dzwiek gdy ulepszenie sie nie uda?" }) })
     @CustomKey("upgrade-failure-sound")
     public String upgradeFailure;
-    @Comments({ @Comment, @Comment({ "Jakie maja byc particle gdy gracz ma pelny set 6 lub 7 poziomu?" }) })
+    @Comments({ @Comment, @Comment({ "Lista mozliwych particlesow dla pelnego seta 6 lub 7 poziomu (losowane przy zalozeniu pelnego seta lub mieszanego 6/7)." }) })
     @CustomKey("particles")
-    public Particle particle;
-    @Comments({ @Comment, @Comment({ "Lista mozliwych particlesow dla pelnego seta 7 poziomu (losowane przy zalozeniu pelnego seta)." }) })
-    @CustomKey("particles-level-seven")
-    public List<Particle> particlesLevelSeven;
+    public List<Particle> particles;
     
     public PluginConfig() {
         this.kowalMenu = new BukkitMenuBuilder("&8Kowal", 3, new MapBuilder<Integer, ItemStack>().put(11, ItemBuilder.of(Material.RED_DYE).setName("&cAnuluj").toItemStack()).put(15, ItemBuilder.of(Material.LIME_DYE).setName("&2Zwieksz poziom").setLore("&7Ulepszenie: &a+{level} \u2192 &a+{new}", " ", "&7Wymagane ulepszacze:", "{items}", "{cost}", " ", "{status}").toItemStack()).build());
@@ -119,7 +116,6 @@ public class PluginConfig extends OkaeriConfig
         this.effects = new MapBuilder<EffectType, Effect>().put(EffectType.ARMOR_DAMAGE, new Effect("&6{chance}% wolniejsze niszczenie seta", 12)).put(EffectType.POTION_DURATION, new Effect("&9{chance}% wydluzenia efektu wypitych mikstur", 12)).put(EffectType.DAMAGE, new Effect("&a{chance}% szansy na odbicie ciosu", 3)).put(EffectType.ARROW, new Effect("&d{chance}% szansy na odbicie strzaly", 10)).build();
         this.upgradeSuccess = "BLOCK_ANVIL_BREAK";
         this.upgradeFailure = "ENTITY_ITEM_BREAK";
-        this.particle = Particle.HAPPY_VILLAGER;
-        this.particlesLevelSeven = List.of(Particle.HAPPY_VILLAGER);
+        this.particles = List.of(Particle.HAPPY_VILLAGER);
     }
 }
