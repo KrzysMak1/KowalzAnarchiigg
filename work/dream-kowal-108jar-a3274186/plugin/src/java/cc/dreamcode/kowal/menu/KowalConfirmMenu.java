@@ -24,6 +24,7 @@ import cc.dreamcode.platform.bukkit.hook.PluginHookManager;
 import cc.dreamcode.kowal.config.MessageConfig;
 import cc.dreamcode.kowal.config.PluginConfig;
 import cc.dreamcode.kowal.KowalPlugin;
+import cc.dreamcode.kowal.citizens.CitizensBypassService;
 import cc.dreamcode.menu.adventure.setup.BukkitMenuPlayerSetup;
 import cc.dreamcode.kowal.util.UpgradeUtil;
 import java.util.Locale;
@@ -35,6 +36,7 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
     private final PluginConfig pluginConfig;
     private final MessageConfig messageConfig;
     private final PluginHookManager pluginHookManager;
+    private final CitizensBypassService bypassService;
     private Level level;
     private KowalMenuMode mode;
     
@@ -54,6 +56,7 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
                 bukkitMenu.setItem((int)slot, ItemBuilder.of(item).fixColors().toItemStack(), (Consumer<InventoryClickEvent>)(event -> {
                     final KowalMenu kowalMenu = this.plugin.createInstance(KowalMenu.class);
                     kowalMenu.setMode(this.mode);
+                    this.bypassService.markMenuOpen((Player)event.getWhoClicked());
                     kowalMenu.build(event.getWhoClicked()).open(event.getWhoClicked());
                 }));
                 return;
@@ -71,15 +74,22 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
     
     private void handleClick(final InventoryClickEvent event) {
         final Player clicked = (Player)event.getWhoClicked();
+        final CitizensBypassService.PendingInput pending = this.bypassService.consumePendingInput(clicked);
         clicked.closeInventory();
         if (this.level == null) {
+            if (pending != null) {
+                this.bypassService.returnPendingInput(clicked, pending);
+            }
             return;
         }
         this.removeItems(clicked);
-        final ItemStack hand = clicked.getInventory().getItemInMainHand();
+        final ItemStack hand = pending != null ? pending.item() : clicked.getInventory().getItemInMainHand();
         final Object levelValue = ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, hand, "upgrade-level").orElse("0");
         final int currentLevel = UpgradeUtil.parseLevel(levelValue);
         if (this.pluginConfig.kowalItems == null || !this.pluginConfig.kowalItems.containsKey((Object)hand.getType())) {
+            if (pending != null) {
+                this.bypassService.returnPendingInput(clicked, pending);
+            }
             return;
         }
         final String displayName = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, hand, "display-name").orElse(this.pluginConfig.kowalItems.get((Object)hand.getType()));
@@ -96,10 +106,16 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
         if (this.mode.equals((Object)KowalMenuMode.KAMIEN_KOWALSKI)) {
             clicked.getInventory().removeItem(new ItemStack[] { ItemBuilder.of(this.pluginConfig.kamienKowalski).setAmount(1).fixColors().toItemStack() });
             if (!success) {
+                if (pending != null) {
+                    this.bypassService.returnPendingInput(clicked, pending);
+                }
                 return;
             }
         }
         if (newLevel < 0) {
+            if (pending != null) {
+                this.bypassService.returnPendingInput(clicked, pending);
+            }
             return;
         }
         final String currentLore = this.level.getItemLoreDisplay();
@@ -126,7 +142,14 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
         if (newLevel < 7) {
             ItemNbtUtil.setValue((Plugin)this.plugin, upgradedItem, "upgrade-effect", "none");
         }
-        clicked.getInventory().setItemInMainHand(upgradedItem);
+        if (pending != null) {
+            this.bypassService.placePendingItem(clicked, new CitizensBypassService.PendingInput(upgradedItem, pending.originSlot()));
+            this.bypassService.logUpgradeConsumed(clicked);
+        }
+        else {
+            clicked.getInventory().setItemInMainHand(upgradedItem);
+            clicked.updateInventory();
+        }
     }
     
     private void removeItems(final Player player) {
@@ -172,11 +195,12 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
     
     @Inject
     @Generated
-    public KowalConfirmMenu(final KowalPlugin plugin, final PluginConfig pluginConfig, final MessageConfig messageConfig, final PluginHookManager pluginHookManager) {
+    public KowalConfirmMenu(final KowalPlugin plugin, final PluginConfig pluginConfig, final MessageConfig messageConfig, final PluginHookManager pluginHookManager, final CitizensBypassService bypassService) {
         this.plugin = plugin;
         this.pluginConfig = pluginConfig;
         this.messageConfig = messageConfig;
         this.pluginHookManager = pluginHookManager;
+        this.bypassService = bypassService;
     }
     
     @Generated

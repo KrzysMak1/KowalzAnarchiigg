@@ -23,6 +23,7 @@ import cc.dreamcode.platform.bukkit.hook.PluginHookManager;
 import cc.dreamcode.kowal.config.MessageConfig;
 import cc.dreamcode.kowal.config.PluginConfig;
 import cc.dreamcode.kowal.KowalPlugin;
+import cc.dreamcode.kowal.citizens.CitizensBypassService;
 import cc.dreamcode.menu.adventure.setup.BukkitMenuPlayerSetup;
 import cc.dreamcode.kowal.util.UpgradeUtil;
 import java.util.regex.Pattern;
@@ -35,6 +36,7 @@ public class KowalMenu implements BukkitMenuPlayerSetup
     private final PluginConfig pluginConfig;
     private final MessageConfig messageConfig;
     private final PluginHookManager pluginHookManager;
+    private final CitizensBypassService bypassService;
     private KowalMenuMode mode;
     private @Nullable ItemStack input;
     
@@ -65,12 +67,14 @@ public class KowalMenu implements BukkitMenuPlayerSetup
                     return;
                 }
                 this.mode = KowalMenuMode.KAMIEN_KOWALSKI;
+                this.bypassService.markMenuOpen((Player)event.getWhoClicked());
                 this.build(event.getWhoClicked()).open(event.getWhoClicked());
             }));
         }
         else {
             bukkitMenu.setItem(this.pluginConfig.modeSlot, ItemBuilder.of(this.pluginConfig.modeKamien).fixColors().toItemStack(), (Consumer<InventoryClickEvent>)(event -> {
                 this.mode = KowalMenuMode.METAL;
+                this.bypassService.markMenuOpen((Player)event.getWhoClicked());
                 this.build(event.getWhoClicked()).open(event.getWhoClicked());
             }));
         }
@@ -103,6 +107,7 @@ public class KowalMenu implements BukkitMenuPlayerSetup
                         if (currentLevel == 0 && hand.hasItemMeta() && hand.getItemMeta().hasDisplayName() && !ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, hand, "display-name").isPresent()) {
                             ItemNbtUtil.setValue((Plugin)this.plugin, hand, "display-name", StringColorUtil.breakColor(hand.getItemMeta().getDisplayName()));
                         }
+                        this.bypassService.markMenuOpen(player);
                         kowalConfirmMenu.build(event.getWhoClicked()).open(event.getWhoClicked());
                     }
                 }));
@@ -148,12 +153,13 @@ public class KowalMenu implements BukkitMenuPlayerSetup
     
     @Inject
     @Generated
-    public KowalMenu(final KowalPlugin plugin, final PluginConfig pluginConfig, final MessageConfig messageConfig, final PluginHookManager pluginHookManager) {
+    public KowalMenu(final KowalPlugin plugin, final PluginConfig pluginConfig, final MessageConfig messageConfig, final PluginHookManager pluginHookManager, final CitizensBypassService bypassService) {
         this.mode = KowalMenuMode.METAL;
         this.plugin = plugin;
         this.pluginConfig = pluginConfig;
         this.messageConfig = messageConfig;
         this.pluginHookManager = pluginHookManager;
+        this.bypassService = bypassService;
     }
 
     @Generated

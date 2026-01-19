@@ -44,12 +44,14 @@ public class KowalCommand implements CommandBase
         final boolean handledBypass = this.citizensBypassService.scheduleNpcOpenIfActive(sender, input -> {
             final KowalMenu kowalMenu = this.plugin.createInstance(KowalMenu.class);
             kowalMenu.setInput(input);
+            this.citizensBypassService.markMenuOpen(sender);
             kowalMenu.build((HumanEntity)sender).open((HumanEntity)sender);
         });
         if (handledBypass) {
             return;
         }
         final KowalMenu kowalMenu = this.plugin.createInstance(KowalMenu.class);
+        this.citizensBypassService.markMenuOpen(sender);
         kowalMenu.build((HumanEntity)sender).open((HumanEntity)sender);
     }
     

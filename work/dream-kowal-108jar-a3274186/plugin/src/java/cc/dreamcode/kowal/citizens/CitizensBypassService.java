@@ -2,6 +2,9 @@ package cc.dreamcode.kowal.citizens;
 
 import cc.dreamcode.kowal.KowalPlugin;
 import cc.dreamcode.kowal.config.PluginConfig;
+import cc.dreamcode.kowal.util.UpgradeUtil;
+import cc.dreamcode.utilities.bukkit.nbt.ItemNbtUtil;
+import org.bukkit.plugin.Plugin;
 import eu.okaeri.injector.annotation.Inject;
 import lombok.Generated;
 import org.bukkit.Material;
@@ -18,6 +21,9 @@ public class CitizensBypassService {
     private static final long BYPASS_DURATION_MS = 1500L;
     private static final long DEBOUNCE_MS = 150L;
     private final Map<UUID, BypassEntry> bypassEntries;
+    private final Map<UUID, ItemStack> pendingInputs;
+    private final Map<UUID, Integer> pendingOriginSlots;
+    private final Map<UUID, Boolean> menuOpen;
     private final KowalPlugin plugin;
     private final PluginConfig pluginConfig;
 
@@ -57,10 +63,103 @@ public class CitizensBypassService {
         return true;
     }
 
+    public void markMenuOpen(final Player player) {
+        if (player == null) {
+            return;
+        }
+        this.menuOpen.put(player.getUniqueId(), true);
+    }
+
+    public void markMenuClosed(final Player player) {
+        if (player == null) {
+            return;
+        }
+        this.menuOpen.put(player.getUniqueId(), false);
+    }
+
+    public boolean isMenuOpen(final Player player) {
+        if (player == null) {
+            return false;
+        }
+        return Boolean.TRUE.equals(this.menuOpen.get(player.getUniqueId()));
+    }
+
+    public boolean hasPendingInput(final Player player) {
+        if (player == null) {
+            return false;
+        }
+        return this.pendingInputs.containsKey(player.getUniqueId());
+    }
+
+    public PendingInput consumePendingInput(final Player player) {
+        if (player == null) {
+            return null;
+        }
+        final UUID uuid = player.getUniqueId();
+        final ItemStack pending = this.pendingInputs.remove(uuid);
+        if (this.isAir(pending)) {
+            this.pendingOriginSlots.remove(uuid);
+            return null;
+        }
+        final Integer originSlot = this.pendingOriginSlots.remove(uuid);
+        return new PendingInput(pending, originSlot);
+    }
+
+    public void logUpgradeConsumed(final Player player) {
+        if (player == null) {
+            return;
+        }
+        this.logDebug("upgrade consumed pending input dla gracza " + player.getName() + ".");
+    }
+
+    public void returnPendingInput(final Player player, final PendingInput pendingInput) {
+        if (player == null || pendingInput == null || this.isAir(pendingInput.item())) {
+            return;
+        }
+        this.placePendingItem(player, pendingInput);
+        this.logDebug("Menu close -> returned pending input dla gracza " + player.getName() + ".");
+    }
+
+    public void placePendingItem(final Player player, final PendingInput pendingInput) {
+        if (player == null || pendingInput == null || this.isAir(pendingInput.item())) {
+            return;
+        }
+        final PlayerInventory inventory = player.getInventory();
+        final int originSlot = pendingInput.originSlot() != null ? pendingInput.originSlot() : inventory.getHeldItemSlot();
+        if (this.isAir(inventory.getItem(originSlot))) {
+            inventory.setItem(originSlot, pendingInput.item());
+        } else {
+            inventory.addItem(pendingInput.item());
+        }
+        player.updateInventory();
+    }
+
+    public boolean returnPendingInputIfExists(final Player player) {
+        if (player == null) {
+            return false;
+        }
+        final UUID uuid = player.getUniqueId();
+        final ItemStack pending = this.pendingInputs.remove(uuid);
+        if (this.isAir(pending)) {
+            this.pendingOriginSlots.remove(uuid);
+            return false;
+        }
+        final Integer originSlot = this.pendingOriginSlots.remove(uuid);
+        this.returnPendingInput(player, new PendingInput(pending, originSlot));
+        return true;
+    }
+
     private void applyBypassAfterTick(final Player player, final BypassEntry entry, final Consumer<ItemStack> openAction) {
         final PlayerInventory inventory = player.getInventory();
         final ItemStack handBefore = entry.handBefore();
         if (this.isAir(handBefore)) {
+            this.logDebug("NPC click: no item -> opening invalid menu dla gracza " + player.getName() + ".");
+            openAction.accept(null);
+            return;
+        }
+        if (!this.isValidKowalItem(handBefore)) {
+            this.logDebug("NPC click: invalid item -> opening invalid menu (no inventory changes) dla gracza " + player.getName() + ".");
+            openAction.accept(null);
             return;
         }
         final int heldSlot = entry.heldSlot();
@@ -80,6 +179,8 @@ public class CitizensBypassService {
             }
         }
         if (source == null || this.isAir(source.item())) {
+            this.logDebug("NPC click: valid item, ale nie znaleziono zrodla -> otwieram invalid menu dla gracza " + player.getName() + ".");
+            openAction.accept(null);
             return;
         }
         if (source.type() == SourceType.ARMOR) {
@@ -90,6 +191,9 @@ public class CitizensBypassService {
             this.logDebug("Wykryto wejscie z reki (zrodlo=HAND) dla gracza " + player.getName() + ".");
             inventory.setItem(heldSlot, new ItemStack(Material.AIR));
         }
+        this.pendingInputs.put(player.getUniqueId(), source.item());
+        this.pendingOriginSlots.put(player.getUniqueId(), heldSlot);
+        this.logDebug("NPC click: valid item -> moved input to GUI, anti-equip applied dla gracza " + player.getName() + ".");
         openAction.accept(source.item());
         player.updateInventory();
     }
@@ -167,6 +271,18 @@ public class CitizensBypassService {
         return itemStack.clone();
     }
 
+    private boolean isValidKowalItem(final ItemStack itemStack) {
+        if (this.isAir(itemStack)) {
+            return false;
+        }
+        if (this.pluginConfig.kowalItems == null || !this.pluginConfig.kowalItems.containsKey(itemStack.getType())) {
+            return false;
+        }
+        final Object levelValue = ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, itemStack, "upgrade-level").orElse("0");
+        final int currentLevel = UpgradeUtil.parseLevel(levelValue);
+        return currentLevel < 7;
+    }
+
     private void logDebug(final String message) {
         final PluginConfig.CitizensSettings citizensSettings = this.pluginConfig.citizens;
         if (citizensSettings != null && citizensSettings.debug) {
@@ -178,6 +294,9 @@ public class CitizensBypassService {
     @Generated
     public CitizensBypassService(final KowalPlugin plugin, final PluginConfig pluginConfig) {
         this.bypassEntries = new ConcurrentHashMap<>();
+        this.pendingInputs = new ConcurrentHashMap<>();
+        this.pendingOriginSlots = new ConcurrentHashMap<>();
+        this.menuOpen = new ConcurrentHashMap<>();
         this.plugin = plugin;
         this.pluginConfig = pluginConfig;
     }
@@ -198,5 +317,8 @@ public class CitizensBypassService {
     }
 
     private record BypassEntry(long expiresAt, long createdAt, int heldSlot, ItemStack handBefore, ArmorSlot armorSlot, ItemStack armorBefore) {
+    }
+
+    public record PendingInput(ItemStack item, Integer originSlot) {
     }
 }

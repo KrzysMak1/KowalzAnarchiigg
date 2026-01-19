@@ -18,6 +18,7 @@ import cc.dreamcode.kowal.controller.ArmorEquipController;
 import cc.dreamcode.kowal.controller.DamageController;
 import cc.dreamcode.kowal.citizens.CitizensBypassService;
 import cc.dreamcode.kowal.listener.CitizensNpcCommandListener;
+import cc.dreamcode.kowal.listener.KowalMenuCloseListener;
 import cc.dreamcode.kowal.tasks.ParticleTask;
 import java.util.function.Consumer;
 import cc.dreamcode.platform.bukkit.hook.PluginHookManager;
@@ -160,5 +161,6 @@ public final class KowalPlugin extends DreamBukkitPlatform implements DreamBukki
             this.getLogger().info("Wykryto Citizens. Integracja NPC jest aktywna.");
         }
         this.getServer().getPluginManager().registerEvents(this.createInstance(CitizensNpcCommandListener.class), this);
+        this.getServer().getPluginManager().registerEvents(this.createInstance(KowalMenuCloseListener.class), this);
     }
 }
