@@ -36,7 +36,7 @@ public class ParticleCache
         this.particleEffect.put(uuid, particle);
     }
     
-    private void remove(@NonNull final UUID uuid) {
+    public void remove(@NonNull final UUID uuid) {
         if (uuid == null) {
             throw new NullPointerException("uuid is marked non-null but is null");
         }
