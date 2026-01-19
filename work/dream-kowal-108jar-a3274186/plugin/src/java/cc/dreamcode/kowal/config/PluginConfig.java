@@ -10,6 +10,7 @@ import org.bukkit.Material;
 import cc.dreamcode.kowal.level.Level;
 import java.util.Map;
 import java.util.List;
+import java.util.ArrayList;
 import org.bukkit.inventory.ItemStack;
 import eu.okaeri.configs.annotation.CustomKey;
 import eu.okaeri.configs.annotation.Comment;
@@ -92,9 +93,9 @@ public class PluginConfig extends OkaeriConfig
     @Comments({ @Comment, @Comment({ "Lista mozliwych particlesow dla pelnego seta 6 lub 7 poziomu (losowane przy zalozeniu pelnego seta lub mieszanego 6/7)." }) })
     @CustomKey("particles")
     public List<Particle> particles;
-    @Comments({ @Comment, @Comment({ "UUID FancyNPC, ktore ma otwierac GUI kowala po kliknieciu PPM (puste = wylaczone)." }) })
-    @CustomKey("fancy-npc-uuid")
-    public String fancyNpcUuid;
+    @Comments({ @Comment, @Comment({ "Ustawienia FancyNpcs do otwierania GUI kowala." }) })
+    @CustomKey("npc")
+    public NpcSettings npc;
     
     public PluginConfig() {
         this.kowalMenu = new BukkitMenuBuilder("&8Kowal", 3, new MapBuilder<Integer, ItemStack>().put(11, ItemBuilder.of(Material.RED_DYE).setName("&cAnuluj").toItemStack()).put(15, ItemBuilder.of(Material.LIME_DYE).setName("&2Zwieksz poziom").setLore("&7Ulepszenie: &a+{level} \u2192 &a+{new}", " ", "&7Wymagane ulepszacze:", "{items}", "{cost}", " ", "{status}").toItemStack()).build());
@@ -120,6 +121,26 @@ public class PluginConfig extends OkaeriConfig
         this.upgradeSuccess = "BLOCK_ANVIL_BREAK";
         this.upgradeFailure = "ENTITY_ITEM_BREAK";
         this.particles = List.of(Particle.HAPPY_VILLAGER);
-        this.fancyNpcUuid = "";
+        this.npc = new NpcSettings();
+    }
+
+    public static class NpcSettings extends OkaeriConfig {
+        @Comment("Czy NPC ma otwierac GUI kowala po kliknieciu PPM.")
+        @CustomKey("enabled")
+        public boolean enabled;
+
+        @Comment("Lista UUID FancyNPC, ktore maja otwierac GUI kowala.")
+        @CustomKey("uuids")
+        public List<String> uuids;
+
+        @Comment("Czy obslugiwac tylko klik z main-hand (true = ignoruj offhand).")
+        @CustomKey("mainHandOnly")
+        public boolean mainHandOnly;
+
+        public NpcSettings() {
+            this.enabled = true;
+            this.uuids = new ArrayList<>();
+            this.mainHandOnly = true;
+        }
     }
 }

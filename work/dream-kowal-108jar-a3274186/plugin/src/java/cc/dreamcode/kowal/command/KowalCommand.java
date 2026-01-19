@@ -27,6 +27,7 @@ import cc.dreamcode.kowal.ParticleCache;
 import cc.dreamcode.kowal.config.MessageConfig;
 import cc.dreamcode.kowal.config.PluginConfig;
 import cc.dreamcode.kowal.KowalPlugin;
+import cc.dreamcode.kowal.npc.NpcUuidRegistry;
 import cc.dreamcode.command.annotation.Command;
 import cc.dreamcode.command.CommandBase;
 
@@ -37,6 +38,7 @@ public class KowalCommand implements CommandBase
     private final PluginConfig pluginConfig;
     private final MessageConfig messageConfig;
     private final cc.dreamcode.kowal.npc.NpcSelectionService npcSelectionService;
+    private final NpcUuidRegistry npcUuidRegistry;
     
     @Executor(description = "Otwiera gui kowala.")
     void gui(final Player sender) {
@@ -129,6 +131,7 @@ public class KowalCommand implements CommandBase
         try {
             this.messageConfig.load();
             this.pluginConfig.load();
+            this.npcUuidRegistry.reload();
             this.plugin.getInject(ParticleCache.class).ifPresent(particleCache -> {
                 particleCache.clear();
                 particleCache.checkOnline();
@@ -143,10 +146,11 @@ public class KowalCommand implements CommandBase
     
     @Inject
     @Generated
-    public KowalCommand(final KowalPlugin plugin, final PluginConfig pluginConfig, final MessageConfig messageConfig, final cc.dreamcode.kowal.npc.NpcSelectionService npcSelectionService) {
+    public KowalCommand(final KowalPlugin plugin, final PluginConfig pluginConfig, final MessageConfig messageConfig, final cc.dreamcode.kowal.npc.NpcSelectionService npcSelectionService, final NpcUuidRegistry npcUuidRegistry) {
         this.plugin = plugin;
         this.pluginConfig = pluginConfig;
         this.messageConfig = messageConfig;
         this.npcSelectionService = npcSelectionService;
+        this.npcUuidRegistry = npcUuidRegistry;
     }
 }
