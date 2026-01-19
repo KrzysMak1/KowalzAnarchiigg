@@ -16,9 +16,10 @@ import cc.dreamcode.kowal.controller.EffectController;
 import cc.dreamcode.kowal.controller.PlayerController;
 import cc.dreamcode.kowal.controller.ArmorEquipController;
 import cc.dreamcode.kowal.controller.DamageController;
-import cc.dreamcode.kowal.controller.FancyNpcController;
+import cc.dreamcode.kowal.listener.NpcInteractListener;
 import cc.dreamcode.kowal.controller.NpcSelectionController;
 import cc.dreamcode.kowal.npc.NpcSelectionService;
+import cc.dreamcode.kowal.npc.NpcUuidRegistry;
 import cc.dreamcode.kowal.tasks.ParticleTask;
 import java.util.function.Consumer;
 import cc.dreamcode.platform.bukkit.hook.PluginHookManager;
@@ -88,14 +89,16 @@ public final class KowalPlugin extends DreamBukkitPlatform implements DreamBukki
         componentService.registerComponent(ParticleCache.class, (java.util.function.Consumer<ParticleCache>)ParticleCache::checkOnline);
         componentService.registerComponent(ParticleTask.class);
         componentService.registerComponent(NpcSelectionService.class);
+        componentService.registerComponent(NpcUuidRegistry.class);
         componentService.registerComponent(DamageController.class);
         componentService.registerComponent(ArmorEquipController.class);
         componentService.registerComponent(PlayerController.class);
-        componentService.registerComponent(FancyNpcController.class);
         componentService.registerComponent(NpcSelectionController.class);
         componentService.registerComponent(EffectController.class);
         componentService.registerComponent(KowalCommand.class);
         this.getInject(PluginConfig.class).ifPresent(this::validateConfig);
+        this.getInject(NpcUuidRegistry.class).ifPresent(NpcUuidRegistry::reload);
+        this.getServer().getPluginManager().registerEvents(this.createInstance(NpcInteractListener.class), this);
     }
     
     public void disable() {
