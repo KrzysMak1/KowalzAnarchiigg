@@ -12,16 +12,18 @@ public class Level
     private final double moneyUpgrade;
     private final String itemLoreDisplay;
     private final double hpReduce;
+    private final double hpReducePercent;
     private final int chance;
     
     @Generated
-    public Level(final Map<Material, Integer> upgradeItems, final String upgradeItemsLore, final String costLore, final double moneyUpgrade, final String itemLoreDisplay, final double hpReduce, final int chance) {
+    public Level(final Map<Material, Integer> upgradeItems, final String upgradeItemsLore, final String costLore, final double moneyUpgrade, final String itemLoreDisplay, final double hpReduce, final double hpReducePercent, final int chance) {
         this.upgradeItems = upgradeItems;
         this.upgradeItemsLore = upgradeItemsLore;
         this.costLore = costLore;
         this.moneyUpgrade = moneyUpgrade;
         this.itemLoreDisplay = itemLoreDisplay;
         this.hpReduce = hpReduce;
+        this.hpReducePercent = hpReducePercent;
         this.chance = chance;
     }
     
@@ -54,6 +56,11 @@ public class Level
     public double getHpReduce() {
         return this.hpReduce;
     }
+
+    @Generated
+    public double getHpReducePercent() {
+        return this.hpReducePercent;
+    }
     
     @Generated
     public int getChance() {
@@ -85,6 +92,9 @@ public class Level
             return false;
         }
         if (Double.compare(this.getHpReduce(), other.getHpReduce()) != 0) {
+            return false;
+        }
+        if (Double.compare(this.getHpReducePercent(), other.getHpReducePercent()) != 0) {
             return false;
         }
         if (this.getChance() != other.getChance()) {
@@ -156,6 +166,8 @@ public class Level
         result = result * 59 + (int)($moneyUpgrade >>> 32 ^ $moneyUpgrade);
         final long $hpReduce = Double.doubleToLongBits(this.getHpReduce());
         result = result * 59 + (int)($hpReduce >>> 32 ^ $hpReduce);
+        final long $hpReducePercent = Double.doubleToLongBits(this.getHpReducePercent());
+        result = result * 59 + (int)($hpReducePercent >>> 32 ^ $hpReducePercent);
         result = result * 59 + this.getChance();
         final Object $upgradeItems = this.getUpgradeItems();
         result = result * 59 + (($upgradeItems == null) ? 43 : $upgradeItems.hashCode());
@@ -171,6 +183,6 @@ public class Level
     @Generated
     @Override
     public String toString() {
-        return "Level(upgradeItems=" + (Object)this.getUpgradeItems() + ", upgradeItemsLore=" + this.getUpgradeItemsLore() + ", costLore=" + this.getCostLore() + ", moneyUpgrade=" + this.getMoneyUpgrade() + ", itemLoreDisplay=" + this.getItemLoreDisplay() + ", hpReduce=" + this.getHpReduce() + ", chance=" + this.getChance() + ")";
+        return "Level(upgradeItems=" + (Object)this.getUpgradeItems() + ", upgradeItemsLore=" + this.getUpgradeItemsLore() + ", costLore=" + this.getCostLore() + ", moneyUpgrade=" + this.getMoneyUpgrade() + ", itemLoreDisplay=" + this.getItemLoreDisplay() + ", hpReduce=" + this.getHpReduce() + ", hpReducePercent=" + this.getHpReducePercent() + ", chance=" + this.getChance() + ")";
     }
 }
