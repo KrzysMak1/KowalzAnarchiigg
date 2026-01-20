@@ -194,9 +194,10 @@ public class CitizensBypassService {
         this.pendingInputs.put(player.getUniqueId(), source.item());
         this.pendingOriginSlots.put(player.getUniqueId(), heldSlot);
         this.logDebug("NPC click: valid item -> moved input to GUI, anti-equip applied dla gracza " + player.getName() + ".");
-        openAction.accept(source.item());
         this.logDebug("sync inventory now");
         player.updateInventory();
+        inventory.setHeldItemSlot(inventory.getHeldItemSlot());
+        openAction.accept(source.item());
         this.plugin.getServer().getScheduler().runTaskLater(this.plugin, () -> {
             this.logDebug("sync inventory next tick");
             if (this.isAir(inventory.getItem(heldSlot))) {
