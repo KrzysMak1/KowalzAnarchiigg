@@ -133,15 +133,18 @@ public final class KowalPlugin extends DreamBukkitPlatform implements DreamBukki
     }
 
     private void validateConfig(final PluginConfig pluginConfig) {
+        pluginConfig.applyLegacyFallbacks(new java.io.File(this.getDataFolder(), "config.yml"));
         pluginConfig.applyKamienKowalskiCustomModelData();
+        pluginConfig.ensureRequirementMessages();
+        pluginConfig.resolvePaymentMode(this.getLogger());
         if (pluginConfig.kowalItems == null || pluginConfig.kowalItems.isEmpty()) {
-            this.getLogger().warning("Config: brak ustawien 'kowal-items-name'.");
+            this.getLogger().warning("Config: brak ustawien 'items.names'.");
         }
         if (pluginConfig.kowalLevels == null || pluginConfig.kowalLevels.isEmpty()) {
-            this.getLogger().warning("Config: brak ustawien 'kowal-levels'.");
+            this.getLogger().warning("Config: brak ustawien 'levels'.");
         }
         if (pluginConfig.effects == null || pluginConfig.effects.isEmpty()) {
-            this.getLogger().warning("Config: brak ustawien 'effect-list'.");
+            this.getLogger().warning("Config: brak ustawien 'effects.list'.");
         }
         if (pluginConfig.kowalLevels != null) {
             for (int level = 1; level <= 7; level++) {

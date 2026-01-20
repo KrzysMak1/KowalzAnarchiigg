@@ -20,12 +20,20 @@ import cc.dreamcode.menu.adventure.base.BukkitMenu;
 import lombok.NonNull;
 import org.bukkit.entity.HumanEntity;
 import cc.dreamcode.platform.bukkit.hook.PluginHookManager;
+import org.bukkit.inventory.meta.ItemMeta;
 import cc.dreamcode.kowal.config.MessageConfig;
 import cc.dreamcode.kowal.config.PluginConfig;
 import cc.dreamcode.kowal.KowalPlugin;
 import cc.dreamcode.kowal.citizens.CitizensBypassService;
 import cc.dreamcode.menu.adventure.setup.BukkitMenuPlayerSetup;
 import cc.dreamcode.kowal.util.UpgradeUtil;
+import cc.dreamcode.kowal.economy.PaymentMode;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.text.DecimalFormat;
 import java.util.regex.Pattern;
 import org.jetbrains.annotations.Nullable;
 
@@ -93,10 +101,23 @@ public class KowalMenu implements BukkitMenuPlayerSetup
                 return;
             }
             if (this.pluginConfig.upgradeAcceptSlot == slot) {
-                final boolean hasRequiredItems = this.hasRequiredItems(player, level);
-                final boolean hasRequiredMoney = this.hasRequiredMoney(player, level);
-                bukkitMenu.setItem((int)slot, ItemBuilder.of(item).fixColors(Map.of("level", currentLevel, "new", currentLevel + 1, "items", this.colorizeLoreLine(level.getUpgradeItemsLore(), hasRequiredItems), "cost", this.colorizeLoreLine(level.getCostLore(), hasRequiredMoney), "status", this.canAfford(player, level) ? this.pluginConfig.canUpgradeStatus : this.pluginConfig.cannotUpgradeStatus)).toItemStack(), (Consumer<InventoryClickEvent>)(event -> {
-                    if (!this.canAfford(player, level)) {
+                final PaymentMode paymentMode = this.pluginConfig.resolvePaymentMode(this.plugin.getLogger());
+                final boolean hasRequiredItems = this.hasRequiredItems(player, level, paymentMode);
+                final boolean hasRequiredMoney = this.hasRequiredMoney(player, level, paymentMode);
+                final String missingItems = this.buildMissingItems(player, level, paymentMode);
+                final String missingMoney = this.buildMissingMoney(player, level, paymentMode);
+                final String status = this.resolveStatus(hasRequiredItems, hasRequiredMoney, paymentMode, missingItems, missingMoney);
+                final String costLine = this.buildCostLine(level, paymentMode, hasRequiredMoney);
+                final List<String> itemsLore = this.buildRequirementsLore(player, level, paymentMode);
+                final Map<String, String> placeholders = Map.of(
+                        "level", String.valueOf(currentLevel),
+                        "new", String.valueOf(currentLevel + 1),
+                        "cost", costLine == null ? "" : costLine,
+                        "status", status == null ? "" : status,
+                        "missingItems", missingItems,
+                        "missingMoney", missingMoney);
+                bukkitMenu.setItem((int)slot, this.applyUpgradePlaceholders(item, placeholders, itemsLore).toItemStack(), (Consumer<InventoryClickEvent>)(event -> {
+                    if (!this.canAfford(player, level, paymentMode)) {
                         player.closeInventory();
                         this.messageConfig.cannotAfford.send((CommandSender)player);
                     }
@@ -120,11 +141,14 @@ public class KowalMenu implements BukkitMenuPlayerSetup
         return bukkitMenu;
     }
     
-    private boolean canAfford(final Player player, final Level level) {
-        return this.hasRequiredItems(player, level) && this.hasRequiredMoney(player, level);
+    private boolean canAfford(final Player player, final Level level, final PaymentMode paymentMode) {
+        return this.hasRequiredItems(player, level, paymentMode) && this.hasRequiredMoney(player, level, paymentMode);
     }
 
-    private boolean hasRequiredItems(final Player player, final Level level) {
+    private boolean hasRequiredItems(final Player player, final Level level, final PaymentMode paymentMode) {
+        if (paymentMode == null || !paymentMode.usesItems()) {
+            return true;
+        }
         if (!level.hasUpgradeItems()) {
             return true;
         }
@@ -136,7 +160,10 @@ public class KowalMenu implements BukkitMenuPlayerSetup
         return true;
     }
 
-    private boolean hasRequiredMoney(final Player player, final Level level) {
+    private boolean hasRequiredMoney(final Player player, final Level level, final PaymentMode paymentMode) {
+        if (paymentMode == null || !paymentMode.usesMoney()) {
+            return true;
+        }
         if (!level.hasMoneyUpgrade()) {
             return true;
         }
@@ -149,6 +176,178 @@ public class KowalMenu implements BukkitMenuPlayerSetup
             return line;
         }
         return "&c" + COLOR_PATTERN.matcher(line).replaceAll("");
+    }
+
+    private String resolveStatus(final boolean hasRequiredItems, final boolean hasRequiredMoney, final PaymentMode paymentMode, final String missingItems, final String missingMoney) {
+        if (hasRequiredItems && hasRequiredMoney) {
+            return this.applyStatusPlaceholders(this.pluginConfig.canUpgradeStatus, missingItems, missingMoney);
+        }
+        if (paymentMode == PaymentMode.MONEY_ONLY) {
+            return this.applyStatusPlaceholders(this.pluginConfig.missingRequirementsMoneyOnlyStatus, missingItems, missingMoney);
+        }
+        if (paymentMode == PaymentMode.ITEMS_ONLY) {
+            return this.applyStatusPlaceholders(this.pluginConfig.missingRequirementsItemsOnlyStatus, missingItems, missingMoney);
+        }
+        if (!hasRequiredItems && !hasRequiredMoney) {
+            return this.applyStatusPlaceholders(this.pluginConfig.missingRequirementsBothStatus, missingItems, missingMoney);
+        }
+        if (!hasRequiredItems) {
+            return this.applyStatusPlaceholders(this.pluginConfig.missingRequirementsStatus, missingItems, missingMoney);
+        }
+        return this.applyStatusPlaceholders(this.pluginConfig.missingRequirementsMoneyOnlyStatus, missingItems, missingMoney);
+    }
+
+    private String applyStatusPlaceholders(final String status, final String missingItems, final String missingMoney) {
+        if (status == null) {
+            return null;
+        }
+        return status.replace("{missingItems}", missingItems == null ? "" : missingItems)
+                .replace("{missingMoney}", missingMoney == null ? "" : missingMoney);
+    }
+
+    private String buildCostLine(final Level level, final PaymentMode paymentMode, final boolean hasRequiredMoney) {
+        if (paymentMode == null || !paymentMode.usesMoney()) {
+            return "";
+        }
+        String costLine = level.getCostLore();
+        if (costLine == null || costLine.isBlank()) {
+            costLine = this.pluginConfig.costLine;
+        }
+        if (costLine == null || costLine.isBlank()) {
+            return "";
+        }
+        final String formatted = formatMoney(level.getMoneyUpgrade());
+        final String replaced = costLine.replace("{cost}", formatted);
+        return this.colorizeLoreLine(replaced, hasRequiredMoney);
+    }
+
+    private List<String> buildRequirementsLore(final Player player, final Level level, final PaymentMode paymentMode) {
+        if (paymentMode == null || !paymentMode.usesItems() || !level.hasUpgradeItems()) {
+            return List.of();
+        }
+        final List<String> lore = new ArrayList<>();
+        level.getUpgradeItems().forEach((material, required) -> {
+            final int have = countItems(player, material);
+            final int missing = Math.max(0, required - have);
+            final String itemName = humanizeMaterial(material);
+            final Map<String, String> itemPlaceholders = Map.of(
+                    "itemName", itemName,
+                    "required", String.valueOf(required),
+                    "have", String.valueOf(have),
+                    "missing", String.valueOf(missing));
+            final String line = missing <= 0 ? this.pluginConfig.itemLineHave : this.pluginConfig.itemLineMissing;
+            if (line != null && !line.isBlank()) {
+                lore.add(applyPlaceholders(line, itemPlaceholders));
+            }
+            if (missing > 0 && this.pluginConfig.itemMissingHint != null && !this.pluginConfig.itemMissingHint.isBlank()) {
+                lore.add(applyPlaceholders(this.pluginConfig.itemMissingHint, itemPlaceholders));
+            }
+            if (missing <= 0 && this.pluginConfig.itemHaveHint != null && !this.pluginConfig.itemHaveHint.isBlank()) {
+                lore.add(applyPlaceholders(this.pluginConfig.itemHaveHint, itemPlaceholders));
+            }
+        });
+        return lore;
+    }
+
+    private String buildMissingItems(final Player player, final Level level, final PaymentMode paymentMode) {
+        if (paymentMode == null || !paymentMode.usesItems() || !level.hasUpgradeItems()) {
+            return "";
+        }
+        return level.getUpgradeItems().entrySet().stream()
+                .map(entry -> {
+                    final int have = countItems(player, entry.getKey());
+                    final int missing = Math.max(0, entry.getValue() - have);
+                    if (missing <= 0) {
+                        return null;
+                    }
+                    return humanizeMaterial(entry.getKey()) + " x" + missing;
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining(", "));
+    }
+
+    private String buildMissingMoney(final Player player, final Level level, final PaymentMode paymentMode) {
+        if (paymentMode == null || !paymentMode.usesMoney() || !level.hasMoneyUpgrade()) {
+            return "";
+        }
+        final double money = (double)this.pluginHookManager.get(VaultHook.class).map(vaultHook -> (Double)vaultHook.getMoney(player).orElse(0.0)).orElse(0.0);
+        final double missing = Math.max(0.0, level.getMoneyUpgrade() - money);
+        return formatMoney(missing);
+    }
+
+    private ItemBuilder applyUpgradePlaceholders(final ItemStack item, final Map<String, String> placeholders, final List<String> itemsLore) {
+        final ItemBuilder builder = ItemBuilder.of(item);
+        final ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            final String name = meta.getDisplayName();
+            if (name != null) {
+                builder.setName(applyPlaceholders(name, placeholders));
+            }
+            final List<String> lore = meta.getLore();
+            if (lore != null) {
+                final List<String> updated = new ArrayList<>();
+                for (final String line : lore) {
+                    if (line == null) {
+                        continue;
+                    }
+                    if (line.contains("{items}")) {
+                        if (!itemsLore.isEmpty()) {
+                            updated.addAll(itemsLore);
+                        }
+                        continue;
+                    }
+                    final String replaced = applyPlaceholders(line, placeholders);
+                    if (replaced != null && !replaced.isBlank()) {
+                        updated.add(replaced);
+                    }
+                }
+                builder.setLore(updated);
+            }
+        }
+        return builder.fixColors();
+    }
+
+    private static String applyPlaceholders(final String input, final Map<String, String> placeholders) {
+        if (input == null) {
+            return null;
+        }
+        String result = input;
+        for (final Map.Entry<String, String> entry : placeholders.entrySet()) {
+            result = result.replace("{" + entry.getKey() + "}", entry.getValue() == null ? "" : entry.getValue());
+        }
+        return result;
+    }
+
+    private static int countItems(final Player player, final Material material) {
+        int count = 0;
+        for (final ItemStack itemStack : player.getInventory().getContents()) {
+            if (itemStack == null || itemStack.getType() != material) {
+                continue;
+            }
+            count += itemStack.getAmount();
+        }
+        return count;
+    }
+
+    private static String humanizeMaterial(final Material material) {
+        final String[] parts = material.name().toLowerCase(Locale.ROOT).split("_");
+        final StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < parts.length; i++) {
+            if (i > 0) {
+                builder.append(' ');
+            }
+            final String part = parts[i];
+            if (part.isEmpty()) {
+                continue;
+            }
+            builder.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
+        }
+        return builder.toString();
+    }
+
+    private static String formatMoney(final double amount) {
+        final DecimalFormat format = new DecimalFormat("0.##");
+        return format.format(amount);
     }
     
     @Inject
