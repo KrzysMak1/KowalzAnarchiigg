@@ -333,8 +333,11 @@ public class CitizensBypassService {
         }
         final Integer windowId = this.packetEventsSupport.getOpenWindowId(player);
         if (windowId != null) {
-            this.logPacketDebug("PacketEvents: sending GUI slot resync windowId=" + windowId + " slot=" + this.pluginConfig.upgradeItemSlot);
-            this.packetEventsSupport.sendSlotResync(player, windowId, this.pluginConfig.upgradeItemSlot, source.item());
+            final int upgradeSlot = this.pluginConfig.slots != null
+                    ? this.pluginConfig.slots.upgradeItem
+                    : 0;
+            this.logPacketDebug("PacketEvents: sending GUI slot resync windowId=" + windowId + " slot=" + upgradeSlot);
+            this.packetEventsSupport.sendSlotResync(player, windowId, upgradeSlot, source.item());
         }
     }
 
