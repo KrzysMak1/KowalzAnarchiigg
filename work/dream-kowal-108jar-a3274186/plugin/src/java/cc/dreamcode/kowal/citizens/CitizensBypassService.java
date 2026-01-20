@@ -193,26 +193,20 @@ public class CitizensBypassService {
         if (source.type() == SourceType.ARMOR) {
             this.logDebug("Wykryto auto-equip (zrodlo=ARMOR) dla gracza " + player.getName() + ".");
             this.setArmorItem(inventory, source.armorSlot(), entry.armorBefore());
-            inventory.setItem(heldSlot, new ItemStack(Material.AIR));
+            inventory.setItem(heldSlot, source.item());
         } else {
             this.logDebug("Wykryto wejscie z reki (zrodlo=HAND) dla gracza " + player.getName() + ".");
-            inventory.setItem(heldSlot, new ItemStack(Material.AIR));
         }
-        this.pendingInputs.put(player.getUniqueId(), source.item());
-        this.pendingOriginSlots.put(player.getUniqueId(), heldSlot);
-        this.logDebug("NPC click: valid item -> moved input to GUI, anti-equip applied dla gracza " + player.getName() + ".");
+        this.logDebug("NPC click: valid item -> input stays in hand, anti-equip applied dla gracza " + player.getName() + ".");
         this.logDebug("sync inventory now");
         player.updateInventory();
         inventory.setHeldItemSlot(inventory.getHeldItemSlot());
-        openAction.accept(source.item());
+        openAction.accept(source.item().clone());
         final Source resolvedSource = source;
         final ItemStack armorBefore = entry.armorBefore();
         this.sendPacketResync(player, heldSlot, resolvedSource, armorBefore);
         this.plugin.getServer().getScheduler().runTaskLater(this.plugin, () -> {
             this.logDebug("sync inventory next tick");
-            if (this.isAir(inventory.getItem(heldSlot))) {
-                inventory.setItem(heldSlot, new ItemStack(Material.AIR));
-            }
             player.updateInventory();
             inventory.setHeldItemSlot(inventory.getHeldItemSlot());
             this.logPacketDebug("PacketEvents: scheduled next-tick resync");
@@ -324,8 +318,8 @@ public class CitizensBypassService {
             return;
         }
         final int handSlotId = HOTBAR_SLOT_OFFSET + heldSlot;
-        this.logPacketDebug("PacketEvents: sending slot resync for hand slot " + heldSlot + " -> AIR");
-        this.packetEventsSupport.sendSlotResync(player, handSlotId, new ItemStack(Material.AIR));
+        this.logPacketDebug("PacketEvents: sending slot resync for hand slot " + heldSlot + " -> " + this.describeItem(source.item()));
+        this.packetEventsSupport.sendSlotResync(player, handSlotId, source.item());
         if (source.type() == SourceType.ARMOR) {
             final int armorSlotId = this.getArmorSlotId(source.armorSlot());
             if (armorSlotId >= 0) {
