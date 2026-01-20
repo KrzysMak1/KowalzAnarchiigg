@@ -22,12 +22,12 @@ public class KowalMenuCloseListener implements Listener {
             return;
         }
         this.bypassService.markMenuClosed(player);
-        this.plugin.getServer().getScheduler().runTask(this.plugin, () -> {
+        this.plugin.getServer().getScheduler().runTaskLater(this.plugin, () -> {
             if (this.bypassService.isMenuOpen(player)) {
                 return;
             }
             this.bypassService.returnPendingInputIfExists(player);
-        });
+        }, 1L);
     }
 
     @Inject

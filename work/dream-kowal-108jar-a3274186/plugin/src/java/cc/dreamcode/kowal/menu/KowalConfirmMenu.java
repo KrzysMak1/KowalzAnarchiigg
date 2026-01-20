@@ -121,10 +121,7 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
         final String currentLore = this.level.getItemLoreDisplay();
         final String previousLore = (newLevel > 0 && this.pluginConfig.kowalLevels != null && this.pluginConfig.kowalLevels.get((Object)newLevel) != null) ? ((Level)this.pluginConfig.kowalLevels.get((Object)newLevel)).getItemLoreDisplay() : "";
         final String colorSuffix = (this.pluginConfig.kowalColors != null) ? (String)this.pluginConfig.kowalColors.get((Object)hand.getType()) : "";
-        String newItemName = displayName + " " + colorSuffix;
-        if (newLevel == 0) {
-            newItemName = colorSuffix.isEmpty() ? displayName : newItemName.substring(0, newItemName.length() - colorSuffix.length());
-        }
+        final String newItemName = UpgradeUtil.buildUpgradeName(displayName, colorSuffix, newLevel);
         final ItemBuilder newItem = ItemBuilder.of(hand).setName(newItemName).setLore(success ? currentLore : previousLore).withNbt((Plugin)this.plugin, "upgrade-level", String.valueOf(newLevel));
         if (newLevel >= 7) {
             final EffectType[] effects = EffectType.values();

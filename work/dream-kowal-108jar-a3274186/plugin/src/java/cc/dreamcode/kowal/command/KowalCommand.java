@@ -28,6 +28,7 @@ import cc.dreamcode.kowal.config.MessageConfig;
 import cc.dreamcode.kowal.config.PluginConfig;
 import cc.dreamcode.kowal.KowalPlugin;
 import cc.dreamcode.kowal.citizens.CitizensBypassService;
+import cc.dreamcode.kowal.util.UpgradeUtil;
 import cc.dreamcode.command.annotation.Command;
 import cc.dreamcode.command.CommandBase;
 
@@ -111,7 +112,10 @@ public class KowalCommand implements CommandBase
             return this.messageConfig.commandUpgradeLevelError;
         }
         final Level found = (Level)this.pluginConfig.kowalLevels.get((Object)level);
-        final ItemBuilder newItem = ItemBuilder.of(item.getType()).setName((String)this.pluginConfig.kowalItems.get((Object)item.getType())).setLore(found.getItemLoreDisplay()).withNbt((Plugin)this.plugin, "upgrade-level", String.valueOf(level));
+        final String displayName = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, item, "display-name").orElse(this.pluginConfig.kowalItems.get((Object)item.getType()));
+        final String colorSuffix = (this.pluginConfig.kowalColors != null) ? (String)this.pluginConfig.kowalColors.get((Object)item.getType()) : "";
+        final String newName = UpgradeUtil.buildUpgradeName(displayName, colorSuffix, level);
+        final ItemBuilder newItem = ItemBuilder.of(item.getType()).setName(newName).setLore(found.getItemLoreDisplay()).withNbt((Plugin)this.plugin, "upgrade-level", String.valueOf(level));
         if (level == 7) {
             final EffectType[] effects = EffectType.values();
             final EffectType random = effects[RandomUtil.nextInteger(effects.length)];
