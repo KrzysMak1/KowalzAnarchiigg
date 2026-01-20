@@ -65,7 +65,7 @@ public final class KowalPlugin extends DreamBukkitPlatform implements DreamBukki
             throw new NullPointerException("componentService is marked non-null but is null");
         }
         if (!VersionUtil.isPaper()) {
-            throw new RuntimeException("Plugin works only on paper fork.");
+            this.getLogger().warning("Plugin works only on paper fork. Continuing anyway.");
         }
         this.saveResource("config.yml", false);
         this.saveResource("message.yml", false);
@@ -113,7 +113,7 @@ public final class KowalPlugin extends DreamBukkitPlatform implements DreamBukki
     
     @NonNull
     public DreamVersion getDreamVersion() {
-        return DreamVersion.create("Dream-Kowal", "1.0.8", "Sebt");
+        return DreamVersion.create("Dream-Kowal", "1.0.9", "Sebt");
     }
     
     @NonNull
