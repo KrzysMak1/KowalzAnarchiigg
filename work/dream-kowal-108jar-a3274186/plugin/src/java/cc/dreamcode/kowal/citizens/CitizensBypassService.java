@@ -291,7 +291,7 @@ public class CitizensBypassService {
         if (this.isAir(itemStack)) {
             return false;
         }
-        if (this.pluginConfig.kowalItems == null || !this.pluginConfig.kowalItems.containsKey(itemStack.getType())) {
+        if (this.pluginConfig.items == null || this.pluginConfig.items.names == null || !this.pluginConfig.items.names.containsKey(itemStack.getType())) {
             return false;
         }
         final Object levelValue = ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, itemStack, "upgrade-level").orElse("0");
@@ -300,14 +300,18 @@ public class CitizensBypassService {
     }
 
     private void logDebug(final String message) {
-        final PluginConfig.CitizensSettings citizensSettings = this.pluginConfig.citizens;
+        final PluginConfig.CitizensSettings citizensSettings = this.pluginConfig.integrations != null
+                ? this.pluginConfig.integrations.citizens
+                : null;
         if (citizensSettings != null && citizensSettings.debug) {
             this.plugin.getLogger().info(message);
         }
     }
 
     private void logPacketDebug(final String message) {
-        final PluginConfig.PacketEventsSyncSettings packetSettings = this.pluginConfig.packetEventsSync;
+        final PluginConfig.PacketEventsSyncSettings packetSettings = this.pluginConfig.integrations != null
+                ? this.pluginConfig.integrations.packetEventsSync
+                : null;
         if (packetSettings != null && packetSettings.debug) {
             this.plugin.getLogger().info(message);
         }

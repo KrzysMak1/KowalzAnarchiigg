@@ -24,8 +24,9 @@ public class ArmorEquipController implements Listener
 
     private boolean isSetItem(final ItemStack item) {
         return item != null
-                && this.pluginConfig.kowalItems != null
-                && this.pluginConfig.kowalItems.containsKey(item.getType());
+                && this.pluginConfig.items != null
+                && this.pluginConfig.items.names != null
+                && this.pluginConfig.items.names.containsKey(item.getType());
     }
     
     @Inject

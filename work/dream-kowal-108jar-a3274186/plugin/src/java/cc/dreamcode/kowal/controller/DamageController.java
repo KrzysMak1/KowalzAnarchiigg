@@ -42,15 +42,17 @@ public class DamageController implements Listener
             final Object levelValue = ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, armor, "upgrade-level").orElse("0");
             final String upgrade = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, armor, "upgrade-effect").orElse("none");
             final int currentLevel = UpgradeUtil.parseLevel(levelValue);
-            if (currentLevel >= 1 && this.pluginConfig.kowalLevels != null) {
-                final Level level = (Level)this.pluginConfig.kowalLevels.get((Object)currentLevel);
+            if (currentLevel >= 1 && this.pluginConfig.levels != null) {
+                final Level level = (Level)this.pluginConfig.levels.get((Object)currentLevel);
                 if (level != null) {
                     reduce += level.getHpReduce();
                     reducePercent += level.getHpReducePercent();
                 }
             }
-            if (upgrade.equals((Object)EffectType.DAMAGE.getData()) && this.pluginConfig.effects != null) {
-                final Effect effect = (Effect)this.pluginConfig.effects.get((Object)EffectType.DAMAGE);
+            if (upgrade.equals((Object)EffectType.DAMAGE.getData())
+                    && this.pluginConfig.effects != null
+                    && this.pluginConfig.effects.list != null) {
+                final Effect effect = (Effect)this.pluginConfig.effects.list.get((Object)EffectType.DAMAGE);
                 if (effect != null) {
                     chance += effect.getAmplifierChance();
                 }

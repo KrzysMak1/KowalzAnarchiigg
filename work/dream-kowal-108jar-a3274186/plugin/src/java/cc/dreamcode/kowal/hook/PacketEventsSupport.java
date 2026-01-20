@@ -26,7 +26,9 @@ public class PacketEventsSupport {
     private final PluginConfig pluginConfig;
 
     public boolean isEnabled() {
-        final PluginConfig.PacketEventsSyncSettings packetSettings = this.pluginConfig.packetEventsSync;
+        final PluginConfig.PacketEventsSyncSettings packetSettings = this.pluginConfig.integrations != null
+                ? this.pluginConfig.integrations.packetEventsSync
+                : null;
         if (packetSettings == null || !packetSettings.enabled) {
             return false;
         }
@@ -223,7 +225,9 @@ public class PacketEventsSupport {
     }
 
     private void logDebug(final String message) {
-        final PluginConfig.PacketEventsSyncSettings packetSettings = this.pluginConfig.packetEventsSync;
+        final PluginConfig.PacketEventsSyncSettings packetSettings = this.pluginConfig.integrations != null
+                ? this.pluginConfig.integrations.packetEventsSync
+                : null;
         if (packetSettings != null && packetSettings.debug) {
             this.plugin.getLogger().info(message);
         }

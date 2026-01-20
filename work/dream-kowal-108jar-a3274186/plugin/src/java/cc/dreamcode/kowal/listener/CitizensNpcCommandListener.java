@@ -19,7 +19,9 @@ public class CitizensNpcCommandListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onNpcCommandDispatch(final NPCCommandDispatchEvent event) {
-        final PluginConfig.CitizensSettings citizensSettings = this.pluginConfig.citizens;
+        final PluginConfig.CitizensSettings citizensSettings = this.pluginConfig.integrations != null
+                ? this.pluginConfig.integrations.citizens
+                : null;
         if (citizensSettings == null || !citizensSettings.enabled) {
             return;
         }
