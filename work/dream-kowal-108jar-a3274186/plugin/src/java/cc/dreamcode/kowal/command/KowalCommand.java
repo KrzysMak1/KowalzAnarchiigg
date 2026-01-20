@@ -89,6 +89,7 @@ public class KowalCommand implements CommandBase
             return this.messageConfig.kamienAir;
         }
         this.pluginConfig.kamienKowalski = ItemBuilder.of(sender.getInventory().getItemInMainHand()).breakColors().toItemStack();
+        this.pluginConfig.applyKamienKowalskiCustomModelData();
         this.pluginConfig.save();
         return this.messageConfig.kamienSet;
     }
@@ -133,6 +134,7 @@ public class KowalCommand implements CommandBase
         try {
             this.messageConfig.load();
             this.pluginConfig.load();
+            this.pluginConfig.applyKamienKowalskiCustomModelData();
             this.plugin.getInject(ParticleCache.class).ifPresent(particleCache -> {
                 particleCache.clear();
                 particleCache.checkOnline();

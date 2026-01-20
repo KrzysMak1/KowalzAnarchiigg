@@ -192,6 +192,7 @@ kamien-kowalski-item:
     - "&8» &7Powoduje, ze przedmiot po ulepszeniu"
     - "&8» &7u &fKowala &7nie cofa swojego poziomu w"
     - "&8» &7przypadku &eniepodowdzenia&7!"
+kamien-kowalski-custom-model-data: 0
 
 effect-list:
   ARMOR_DAMAGE:

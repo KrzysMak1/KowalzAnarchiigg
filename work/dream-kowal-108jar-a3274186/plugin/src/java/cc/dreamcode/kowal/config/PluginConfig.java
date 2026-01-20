@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import eu.okaeri.configs.annotation.CustomKey;
 import eu.okaeri.configs.annotation.Comment;
 import eu.okaeri.configs.annotation.Comments;
@@ -81,6 +82,9 @@ public class PluginConfig extends OkaeriConfig
     @Comments({ @Comment, @Comment({ "Jak ma wygladac kamien kowalski?" }) })
     @CustomKey("kamien-kowalski-item")
     public ItemStack kamienKowalski;
+    @Comments({ @Comment, @Comment({ "Custom model data dla kamienia kowalskiego. (0 = brak)" }) })
+    @CustomKey("kamien-kowalski-custom-model-data")
+    public Integer kamienKowalskiCustomModelData;
     @Comments({ @Comment, @Comment({ "Lista efektow, ktore gracz dostaje losowo na 7 poziomie ulepszenia." }) })
     @CustomKey("effect-list")
     public Map<EffectType, Effect> effects;
@@ -117,11 +121,30 @@ public class PluginConfig extends OkaeriConfig
         this.kowalItems = new MapBuilder<Material, String>().put(Material.DIAMOND_HELMET, "&3Diamentowy helm").put(Material.DIAMOND_CHESTPLATE, "&3Diamentowa klata").put(Material.DIAMOND_LEGGINGS, "&3Diamentowe spodnie").put(Material.DIAMOND_BOOTS, "&3Diamentowe buty").put(Material.NETHERITE_HELMET, "&cNetherytowy helm").put(Material.NETHERITE_CHESTPLATE, "&cNetherytowa klata").put(Material.NETHERITE_LEGGINGS, "&cNetherytowe spodnie").put(Material.NETHERITE_BOOTS, "&cNetherytowe buty").build();
         this.kowalColors = new MapBuilder<Material, String>().put(Material.DIAMOND_HELMET, "&b+{level}").put(Material.DIAMOND_CHESTPLATE, "&b+{level}").put(Material.DIAMOND_LEGGINGS, "&b+{level}").put(Material.DIAMOND_BOOTS, "&b+{level}").put(Material.NETHERITE_HELMET, "&4+{level}").put(Material.NETHERITE_CHESTPLATE, "&4+{level}").put(Material.NETHERITE_LEGGINGS, "&4+{level}").put(Material.NETHERITE_BOOTS, "&4+{level}").build();
         this.kamienKowalski = ItemBuilder.of(Material.GRAY_DYE).setName("&cKamien kowalski").setLore("&8» &7Powoduje, ze przedmiot po ulepszeniu", "&8» &7u &fKowala &7nie cofa swojego poziomu w", "&8» &7przypadku &eniepowodzenia&7!").toItemStack();
+        this.kamienKowalskiCustomModelData = 0;
+        this.applyKamienKowalskiCustomModelData();
         this.effects = new MapBuilder<EffectType, Effect>().put(EffectType.ARMOR_DAMAGE, new Effect("&6{chance}% wolniejsze niszczenie seta", 12)).put(EffectType.POTION_DURATION, new Effect("&9{chance}% wydluzenia efektu wypitych mikstur", 12)).put(EffectType.DAMAGE, new Effect("&a{chance}% szansy na odbicie ciosu", 3)).put(EffectType.ARROW, new Effect("&d{chance}% szansy na odbicie strzaly", 10)).build();
         this.upgradeSuccess = "BLOCK_ANVIL_BREAK";
         this.upgradeFailure = "ENTITY_ITEM_BREAK";
         this.particles = List.of(Particle.HAPPY_VILLAGER);
         this.citizens = new CitizensSettings();
+    }
+
+    public void applyKamienKowalskiCustomModelData() {
+        if (this.kamienKowalski == null) {
+            return;
+        }
+        final ItemMeta meta = this.kamienKowalski.getItemMeta();
+        if (meta == null) {
+            return;
+        }
+        if (this.kamienKowalskiCustomModelData != null && this.kamienKowalskiCustomModelData > 0) {
+            meta.setCustomModelData(this.kamienKowalskiCustomModelData);
+        }
+        else {
+            meta.setCustomModelData(null);
+        }
+        this.kamienKowalski.setItemMeta(meta);
     }
 
     public static class CitizensSettings extends OkaeriConfig {
