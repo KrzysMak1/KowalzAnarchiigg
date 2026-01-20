@@ -9,6 +9,7 @@ import cc.dreamcode.kowal.effect.Effect;
 import cc.dreamcode.utilities.RandomUtil;
 import cc.dreamcode.kowal.effect.EffectType;
 import org.bukkit.plugin.Plugin;
+import cc.dreamcode.utilities.bukkit.nbt.ItemNbtUtil;
 import cc.dreamcode.kowal.level.Level;
 import org.bukkit.Material;
 import cc.dreamcode.notice.bukkit.BukkitNotice;
