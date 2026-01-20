@@ -47,14 +47,14 @@ public class ParticleCache
         if (player == null) {
             throw new NullPointerException("player is marked non-null but is null");
         }
-        if (this.pluginConfig.kowalItems == null || this.pluginConfig.kowalItems.isEmpty()) {
+        if (this.pluginConfig.items == null || this.pluginConfig.items.names == null || this.pluginConfig.items.names.isEmpty()) {
             return false;
         }
         for (final ItemStack armor : player.getInventory().getArmorContents()) {
             if (armor == null) {
                 return false;
             }
-            if (!this.pluginConfig.kowalItems.containsKey(armor.getType())) {
+            if (!this.pluginConfig.items.names.containsKey(armor.getType())) {
                 return false;
             }
             final Object levelValue = ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, armor, "upgrade-level").orElse("0");

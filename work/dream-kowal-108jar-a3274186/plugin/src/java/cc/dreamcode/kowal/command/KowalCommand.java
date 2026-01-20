@@ -65,7 +65,7 @@ public class KowalCommand implements CommandBase
             this.messageConfig.invalidFormat.send(sender, Map.of("input", "amount"));
             return;
         }
-        final ItemStack kamien = ItemBuilder.of(this.pluginConfig.kamienKowalski).setAmount(amount).fixColors().toItemStack();
+        final ItemStack kamien = ItemBuilder.of(this.pluginConfig.items.kamienKowalski).setAmount(amount).fixColors().toItemStack();
         if (target.equals((Object)"all")) {
             this.plugin.getServer().getOnlinePlayers().forEach(player -> {
                 InventoryUtil.giveItem(player, kamien.clone());
@@ -90,8 +90,8 @@ public class KowalCommand implements CommandBase
         if (sender.getInventory().getItemInMainHand().getType().equals((Object)Material.AIR)) {
             return this.messageConfig.kamienAir;
         }
-        this.pluginConfig.kamienKowalski = ItemBuilder.of(sender.getInventory().getItemInMainHand()).breakColors().toItemStack();
-        this.pluginConfig.applyKamienKowalskiCustomModelData();
+        this.pluginConfig.items.kamienKowalski = ItemBuilder.of(sender.getInventory().getItemInMainHand()).breakColors().toItemStack();
+        this.pluginConfig.items.applyKamienKowalskiCustomModelData();
         this.pluginConfig.save();
         return this.messageConfig.kamienSet;
     }
@@ -103,24 +103,29 @@ public class KowalCommand implements CommandBase
         if (item.getType().equals((Object)Material.AIR)) {
             return this.messageConfig.commandUpgradeAir;
         }
-        if (!this.pluginConfig.kowalItems.containsKey((Object)item.getType())) {
+        if (!this.pluginConfig.items.names.containsKey((Object)item.getType())) {
             return this.messageConfig.commandUpgradeNotArmor;
         }
         if (level > 7 || level <= 0) {
             return this.messageConfig.commandUpgradeLevelError;
         }
-        if (this.pluginConfig.kowalLevels == null || !this.pluginConfig.kowalLevels.containsKey((Object)level)) {
+        if (this.pluginConfig.levels == null || !this.pluginConfig.levels.containsKey((Object)level)) {
             return this.messageConfig.commandUpgradeLevelError;
         }
-        final Level found = (Level)this.pluginConfig.kowalLevels.get((Object)level);
-        final String displayName = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, item, "display-name").orElse(this.pluginConfig.kowalItems.get((Object)item.getType()));
-        final String colorSuffix = (this.pluginConfig.kowalColors != null) ? (String)this.pluginConfig.kowalColors.get((Object)item.getType()) : "";
+        final Level found = (Level)this.pluginConfig.levels.get((Object)level);
+        final String displayName = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, item, "display-name")
+                .orElse(this.pluginConfig.items.names.get((Object)item.getType()));
+        final String colorSuffix = (this.pluginConfig.items.colors != null)
+                ? (String)this.pluginConfig.items.colors.get((Object)item.getType())
+                : "";
         final String newName = UpgradeUtil.buildUpgradeName(displayName, colorSuffix, level);
         final ItemBuilder newItem = ItemBuilder.of(item.getType()).setName(newName).setLore(found.getItemLoreDisplay()).withNbt((Plugin)this.plugin, "upgrade-level", String.valueOf(level));
         if (level == 7) {
             final EffectType[] effects = EffectType.values();
             final EffectType random = effects[RandomUtil.nextInteger(effects.length)];
-            final Effect randomEffect = (this.pluginConfig.effects != null) ? (Effect)this.pluginConfig.effects.get((Object)random) : null;
+            final Effect randomEffect = (this.pluginConfig.effects != null && this.pluginConfig.effects.list != null)
+                    ? (Effect)this.pluginConfig.effects.list.get((Object)random)
+                    : null;
             if (randomEffect != null) {
                 newItem.withNbt((Plugin)this.plugin, "upgrade-effect", random.getData()).appendLore(randomEffect.getLore()).fixColors(Map.of("level", level, "chance", randomEffect.getAmplifierChance()));
             }
@@ -139,7 +144,7 @@ public class KowalCommand implements CommandBase
         try {
             this.messageConfig.load();
             this.pluginConfig.load();
-            this.pluginConfig.applyKamienKowalskiCustomModelData();
+            this.pluginConfig.items.applyKamienKowalskiCustomModelData();
             this.plugin.getInject(ParticleCache.class).ifPresent(particleCache -> {
                 particleCache.clear();
                 particleCache.checkOnline();

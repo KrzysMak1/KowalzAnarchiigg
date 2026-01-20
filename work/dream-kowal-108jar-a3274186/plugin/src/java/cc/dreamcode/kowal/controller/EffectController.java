@@ -33,7 +33,8 @@ public class EffectController implements Listener
     @EventHandler
     public void onArmorDamage(final PlayerItemDamageEvent event) {
         final Player player = event.getPlayer();
-        if (this.pluginConfig.kowalItems == null || !this.pluginConfig.kowalItems.containsKey((Object)event.getItem().getType())) {
+        if (this.pluginConfig.items == null || this.pluginConfig.items.names == null
+                || !this.pluginConfig.items.names.containsKey((Object)event.getItem().getType())) {
             return;
         }
         if (event.getPlayer().getInventory().getChestplate() == null) {
@@ -45,8 +46,10 @@ public class EffectController implements Listener
                 continue;
             }
             final String upgrade = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, armor, "upgrade-effect").orElse("none");
-            if (upgrade.equals((Object)EffectType.ARMOR_DAMAGE.getData()) && this.pluginConfig.effects != null) {
-                final Effect effect = (Effect)this.pluginConfig.effects.get((Object)EffectType.ARMOR_DAMAGE);
+            if (upgrade.equals((Object)EffectType.ARMOR_DAMAGE.getData())
+                    && this.pluginConfig.effects != null
+                    && this.pluginConfig.effects.list != null) {
+                final Effect effect = (Effect)this.pluginConfig.effects.list.get((Object)EffectType.ARMOR_DAMAGE);
                 if (effect != null) {
                     chance += effect.getAmplifierChance();
                 }
@@ -69,8 +72,10 @@ public class EffectController implements Listener
                 continue;
             }
             final String upgrade = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, armor, "upgrade-effect").orElse("none");
-            if (upgrade.equals((Object)EffectType.POTION_DURATION.getData()) && this.pluginConfig.effects != null) {
-                final Effect effect = (Effect)this.pluginConfig.effects.get((Object)EffectType.POTION_DURATION);
+            if (upgrade.equals((Object)EffectType.POTION_DURATION.getData())
+                    && this.pluginConfig.effects != null
+                    && this.pluginConfig.effects.list != null) {
+                final Effect effect = (Effect)this.pluginConfig.effects.list.get((Object)EffectType.POTION_DURATION);
                 if (effect != null) {
                     amplifier += effect.getAmplifierChance() / 100.0;
                 }
@@ -114,8 +119,10 @@ public class EffectController implements Listener
                 continue;
             }
             final String upgrade = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, armor, "upgrade-effect").orElse("none");
-            if (upgrade.equals((Object)EffectType.ARROW.getData()) && this.pluginConfig.effects != null) {
-                final Effect effect = (Effect)this.pluginConfig.effects.get((Object)EffectType.ARROW);
+            if (upgrade.equals((Object)EffectType.ARROW.getData())
+                    && this.pluginConfig.effects != null
+                    && this.pluginConfig.effects.list != null) {
+                final Effect effect = (Effect)this.pluginConfig.effects.list.get((Object)EffectType.ARROW);
                 if (effect != null) {
                     chance += effect.getAmplifierChance();
                 }

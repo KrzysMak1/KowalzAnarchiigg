@@ -49,11 +49,11 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
         if (!(humanEntity instanceof Player)) {
             throw new RuntimeException("humanEntity must be Player");
         }
-        final BukkitMenuBuilder builder = this.pluginConfig.confirmMenu;
+        final BukkitMenuBuilder builder = this.pluginConfig.menus.confirm;
         final BukkitMenu bukkitMenu = builder.buildEmpty();
         bukkitMenu.setDisposeWhenClose(true);
         builder.getItems().forEach((slot, item) -> {
-            if (this.pluginConfig.confirmCancelSlot == slot) {
+            if (this.pluginConfig.slots.confirmCancel == slot) {
                 bukkitMenu.setItem((int)slot, ItemBuilder.of(item).fixColors().toItemStack(), (Consumer<InventoryClickEvent>)(event -> {
                     final KowalMenu kowalMenu = this.plugin.createInstance(KowalMenu.class);
                     kowalMenu.setMode(this.mode);
@@ -65,10 +65,10 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
             bukkitMenu.setItem((int)slot, ItemBuilder.of(item).fixColors().toItemStack());
         });
         if (this.mode.equals((Object)KowalMenuMode.METAL)) {
-            bukkitMenu.setItem(this.pluginConfig.confirmAcceptSlot, ItemBuilder.of(this.pluginConfig.confirmModeMetal).fixColors(Map.of("chance", this.level.getChance())).toItemStack(), (Consumer<InventoryClickEvent>)this::handleClick);
+            bukkitMenu.setItem(this.pluginConfig.slots.confirmAccept, ItemBuilder.of(this.pluginConfig.menus.confirmMetalItem).fixColors(Map.of("chance", this.level.getChance())).toItemStack(), (Consumer<InventoryClickEvent>)this::handleClick);
         }
         else {
-            bukkitMenu.setItem(this.pluginConfig.confirmAcceptSlot, ItemBuilder.of(this.pluginConfig.confirmModeKamien).fixColors(Map.of("chance", this.level.getChance())).toItemStack(), (Consumer<InventoryClickEvent>)this::handleClick);
+            bukkitMenu.setItem(this.pluginConfig.slots.confirmAccept, ItemBuilder.of(this.pluginConfig.menus.confirmKamienItem).fixColors(Map.of("chance", this.level.getChance())).toItemStack(), (Consumer<InventoryClickEvent>)this::handleClick);
         }
         return bukkitMenu;
     }
@@ -87,25 +87,27 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
         final ItemStack hand = pending != null ? pending.item() : clicked.getInventory().getItemInMainHand();
         final Object levelValue = ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, hand, "upgrade-level").orElse("0");
         final int currentLevel = UpgradeUtil.parseLevel(levelValue);
-        if (this.pluginConfig.kowalItems == null || !this.pluginConfig.kowalItems.containsKey((Object)hand.getType())) {
+        if (this.pluginConfig.items == null || this.pluginConfig.items.names == null
+                || !this.pluginConfig.items.names.containsKey((Object)hand.getType())) {
             if (pending != null) {
                 this.bypassService.returnPendingInput(clicked, pending);
             }
             return;
         }
-        final String displayName = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, hand, "display-name").orElse(this.pluginConfig.kowalItems.get((Object)hand.getType()));
+        final String displayName = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, hand, "display-name")
+                .orElse(this.pluginConfig.items.names.get((Object)hand.getType()));
         final boolean success = RandomUtil.chance(this.level.getChance());
         final int newLevel = success ? (currentLevel + 1) : (currentLevel - 1);
         if (success) {
             this.messageConfig.upgradeSuccess.send((CommandSender)clicked);
-            this.playConfiguredSound(clicked, this.pluginConfig.upgradeSuccess);
+            this.playConfiguredSound(clicked, this.pluginConfig.sounds.upgradeSuccess);
         }
         else {
             this.messageConfig.upgradeFailure.send((CommandSender)clicked);
-            this.playConfiguredSound(clicked, this.pluginConfig.upgradeFailure);
+            this.playConfiguredSound(clicked, this.pluginConfig.sounds.upgradeFailure);
         }
         if (this.mode.equals((Object)KowalMenuMode.KAMIEN_KOWALSKI)) {
-            clicked.getInventory().removeItem(new ItemStack[] { ItemBuilder.of(this.pluginConfig.kamienKowalski).setAmount(1).fixColors().toItemStack() });
+            clicked.getInventory().removeItem(new ItemStack[] { ItemBuilder.of(this.pluginConfig.items.kamienKowalski).setAmount(1).fixColors().toItemStack() });
             if (!success) {
                 if (pending != null) {
                     this.bypassService.returnPendingInput(clicked, pending);
@@ -120,14 +122,20 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
             return;
         }
         final String currentLore = this.level.getItemLoreDisplay();
-        final String previousLore = (newLevel > 0 && this.pluginConfig.kowalLevels != null && this.pluginConfig.kowalLevels.get((Object)newLevel) != null) ? ((Level)this.pluginConfig.kowalLevels.get((Object)newLevel)).getItemLoreDisplay() : "";
-        final String colorSuffix = (this.pluginConfig.kowalColors != null) ? (String)this.pluginConfig.kowalColors.get((Object)hand.getType()) : "";
+        final String previousLore = (newLevel > 0 && this.pluginConfig.levels != null && this.pluginConfig.levels.get((Object)newLevel) != null)
+                ? ((Level)this.pluginConfig.levels.get((Object)newLevel)).getItemLoreDisplay()
+                : "";
+        final String colorSuffix = (this.pluginConfig.items.colors != null)
+                ? (String)this.pluginConfig.items.colors.get((Object)hand.getType())
+                : "";
         final String newItemName = UpgradeUtil.buildUpgradeName(displayName, colorSuffix, newLevel);
         final ItemBuilder newItem = ItemBuilder.of(hand).setName(newItemName).setLore(success ? currentLore : previousLore).withNbt((Plugin)this.plugin, "upgrade-level", String.valueOf(newLevel));
         if (newLevel >= 7) {
             final EffectType[] effects = EffectType.values();
             final EffectType random = effects[RandomUtil.nextInteger(effects.length)];
-            final Effect randomEffect = (this.pluginConfig.effects != null) ? (Effect)this.pluginConfig.effects.get((Object)random) : null;
+            final Effect randomEffect = (this.pluginConfig.effects != null && this.pluginConfig.effects.list != null)
+                    ? (Effect)this.pluginConfig.effects.list.get((Object)random)
+                    : null;
             if (randomEffect != null) {
                 newItem.withNbt((Plugin)this.plugin, "upgrade-effect", random.getData()).appendLore(randomEffect.getLore()).fixColors(Map.of("level", newLevel, "chance", randomEffect.getAmplifierChance()));
             }

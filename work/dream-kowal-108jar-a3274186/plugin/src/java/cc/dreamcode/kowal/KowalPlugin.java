@@ -133,22 +133,23 @@ public final class KowalPlugin extends DreamBukkitPlatform implements DreamBukki
     }
 
     private void validateConfig(final PluginConfig pluginConfig) {
-        pluginConfig.applyLegacyFallbacks(new java.io.File(this.getDataFolder(), "config.yml"));
-        pluginConfig.applyKamienKowalskiCustomModelData();
+        if (pluginConfig.items != null) {
+            pluginConfig.items.applyKamienKowalskiCustomModelData();
+        }
         pluginConfig.ensureRequirementMessages();
         pluginConfig.resolvePaymentMode(this.getLogger());
-        if (pluginConfig.kowalItems == null || pluginConfig.kowalItems.isEmpty()) {
+        if (pluginConfig.items == null || pluginConfig.items.names == null || pluginConfig.items.names.isEmpty()) {
             this.getLogger().warning("Config: brak ustawien 'items.names'.");
         }
-        if (pluginConfig.kowalLevels == null || pluginConfig.kowalLevels.isEmpty()) {
+        if (pluginConfig.levels == null || pluginConfig.levels.isEmpty()) {
             this.getLogger().warning("Config: brak ustawien 'levels'.");
         }
-        if (pluginConfig.effects == null || pluginConfig.effects.isEmpty()) {
+        if (pluginConfig.effects == null || pluginConfig.effects.list == null || pluginConfig.effects.list.isEmpty()) {
             this.getLogger().warning("Config: brak ustawien 'effects.list'.");
         }
-        if (pluginConfig.kowalLevels != null) {
+        if (pluginConfig.levels != null) {
             for (int level = 1; level <= 7; level++) {
-                if (!pluginConfig.kowalLevels.containsKey(level)) {
+                if (!pluginConfig.levels.containsKey(level)) {
                     this.getLogger().warning("Config: brak definicji poziomu kowala " + level + ".");
                 }
             }
@@ -156,7 +157,7 @@ public final class KowalPlugin extends DreamBukkitPlatform implements DreamBukki
     }
 
     private void registerCitizensListener(final PluginConfig pluginConfig) {
-        final PluginConfig.CitizensSettings citizensSettings = pluginConfig.citizens;
+        final PluginConfig.CitizensSettings citizensSettings = pluginConfig.integrations != null ? pluginConfig.integrations.citizens : null;
         if (citizensSettings == null || !citizensSettings.enabled) {
             return;
         }
