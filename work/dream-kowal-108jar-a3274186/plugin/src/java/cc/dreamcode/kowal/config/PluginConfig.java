@@ -172,7 +172,7 @@ public class PluginConfig extends OkaeriConfig
     @CustomKey("particles.list")
     public List<Particle> particles;
     @CustomKey("particles")
-    private List<Particle> legacyParticles;
+    private Object legacyParticles;
     @Comments({ @Comment, @Comment({ "Ustawienia Citizens do bypassu auto-equip." }) })
     @CustomKey("integrations.citizens")
     public CitizensSettings citizens;
@@ -333,7 +333,7 @@ public class PluginConfig extends OkaeriConfig
             this.upgradeFailure = this.legacyUpgradeFailure;
         }
         if (!yaml.contains("particles.list") && this.legacyParticles != null) {
-            this.particles = this.legacyParticles;
+            this.particles = this.resolveLegacyParticles(this.legacyParticles);
         }
         if (!yaml.contains("integrations.citizens") && this.legacyCitizens != null) {
             this.citizens = this.legacyCitizens;
@@ -375,6 +375,30 @@ public class PluginConfig extends OkaeriConfig
         if (this.itemHaveHint == null) {
             this.itemHaveHint = "";
         }
+    }
+
+    private List<Particle> resolveLegacyParticles(Object legacyParticlesValue) {
+        if (legacyParticlesValue instanceof List<?> legacyList) {
+            return this.mapParticlesFromList(legacyList);
+        }
+        if (legacyParticlesValue instanceof Map<?, ?> legacyMap) {
+            Object listValue = legacyMap.get("list");
+            if (listValue instanceof List<?> legacyList) {
+                return this.mapParticlesFromList(legacyList);
+            }
+        }
+        return this.particles;
+    }
+
+    private List<Particle> mapParticlesFromList(List<?> legacyList) {
+        return legacyList.stream()
+                .map(entry -> {
+                    if (entry instanceof Particle particle) {
+                        return particle;
+                    }
+                    return Particle.valueOf(String.valueOf(entry));
+                })
+                .toList();
     }
 
     public static class CitizensSettings extends OkaeriConfig {
