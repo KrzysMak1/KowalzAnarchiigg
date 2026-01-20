@@ -131,6 +131,7 @@ public final class KowalPlugin extends DreamBukkitPlatform implements DreamBukki
     }
 
     private void validateConfig(final PluginConfig pluginConfig) {
+        pluginConfig.applyKamienKowalskiCustomModelData();
         if (pluginConfig.kowalItems == null || pluginConfig.kowalItems.isEmpty()) {
             this.getLogger().warning("Config: brak ustawien 'kowal-items-name'.");
         }
