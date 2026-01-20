@@ -315,7 +315,7 @@ public class KowalMenu implements BukkitMenuPlayerSetup
                         continue;
                     }
                     final String replaced = applyPlaceholders(line, placeholders);
-                    if (replaced != null && !replaced.isBlank()) {
+                    if (replaced != null) {
                         updated.add(replaced);
                     }
                 }
