@@ -29,6 +29,7 @@ import cc.dreamcode.menu.adventure.setup.BukkitMenuPlayerSetup;
 import cc.dreamcode.kowal.util.UpgradeUtil;
 import java.util.Locale;
 import org.bukkit.Sound;
+import cc.dreamcode.kowal.economy.PaymentMode;
 
 public class KowalConfirmMenu implements BukkitMenuPlayerSetup
 {
@@ -150,10 +151,11 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
     }
     
     private void removeItems(final Player player) {
-        if (this.level.hasMoneyUpgrade()) {
+        final PaymentMode paymentMode = this.pluginConfig.resolvePaymentMode(this.plugin.getLogger());
+        if (paymentMode != null && paymentMode.usesMoney() && this.level.hasMoneyUpgrade()) {
             this.pluginHookManager.get(VaultHook.class).map(vaultHook -> vaultHook.withdraw(player, this.level.getMoneyUpgrade()));
         }
-        if (!this.level.hasUpgradeItems()) {
+        if (paymentMode == null || !paymentMode.usesItems() || !this.level.hasUpgradeItems()) {
             return;
         }
         this.level.getUpgradeItems().forEach((item, amount) -> player.getInventory().removeItem(new ItemStack[] { new ItemStack(item, (int)amount) }));

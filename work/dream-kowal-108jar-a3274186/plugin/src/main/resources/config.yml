@@ -1,226 +1,257 @@
 ## Dream-Kowal (Main-Config) ##
 
-kowal-menu:
-  name: "&8Kowal"
-  rows: 3
-  items:
-    11:
-      material: RED_DYE
-      display-name: "&cAnuluj"
-    15:
-      material: LIME_DYE
-      display-name: "&2Zwieksz poziom"
-      lore:
-        - "&7Ulepszenie: &a+{level} → &a+{new}"
-        - " "
-        - "&7Wymagane ulepszacze:"
-        - "{items}"
-        - "{cost}"
-        - " "
-        - "{status}"
+# Sekcja GUI kowala.
+menus:
+  kowal:
+    name: "&8Kowal"
+    rows: 3
+    items:
+      11:
+        material: RED_DYE
+        display-name: "&cAnuluj"
+      15:
+        material: LIME_DYE
+        display-name: "&2Zwieksz poziom"
+        lore:
+          - "&7Ulepszenie: &a+{level} → &a+{new}"
+          - " "
+          - "&7Wymagane ulepszacze:"
+          - "{items}"
+          - "{cost}"
+          - " "
+          - "{status}"
 
-kowal-menu-mode-metal:
-  material: LEVER
-  display-name: "&9Ulepszanie kamieniem kowalskim"
-  lore:
-    - "&7Gdy ulepszasz przedmiot &fKamieniem Kowalskim"
-    - "&7masz pewnosc, ze gdy ulepszenie sie"
-    - "&7nie powiedzie poziom przedmiotu nie"
-    - "&7zostanie obnizony"
-    - " "
-    - "&aKliknij aby przelaczyc!"
+  modeMetal:
+    material: LEVER
+    display-name: "&9Ulepszanie kamieniem kowalskim"
+    lore:
+      - "&7Gdy ulepszasz przedmiot &fKamieniem Kowalskim"
+      - "&7masz pewnosc, ze gdy ulepszenie sie"
+      - "&7nie powiedzie poziom przedmiotu nie"
+      - "&7zostanie obnizony"
+      - " "
+      - "&aKliknij aby przelaczyc!"
 
-kowal-menu-mode-kamien:
-  material: REDSTONE_TORCH
-  display-name: "&5Ulepszasz metalem!"
-  lore:
-    - "&7Ulepszasz przedmiotem specjalnym"
-    - "&7metalem, ktory zabezpiecza przed"
-    - "&7obnizeniem poziomu przedmiotu."
-    - " "
-    - "&dKliknij aby przelaczyc!"
+  modeKamien:
+    material: REDSTONE_TORCH
+    display-name: "&5Ulepszasz metalem!"
+    lore:
+      - "&7Ulepszasz przedmiotem specjalnym"
+      - "&7metalem, ktory zabezpiecza przed"
+      - "&7obnizeniem poziomu przedmiotu."
+      - " "
+      - "&dKliknij aby przelaczyc!"
 
-kowal-menu-mode-slot: 22
-kowal-menu-upgrade-cancel-slot: 11
-kowal-menu-upgrade-item-slot: 13
-kowal-menu-upgrade-accept-slot: 15
+  notUpgradeable:
+    material: BARRIER
+    display-name: "&cNiepoprawny przedmiot!"
+    lore:
+      - "&7Przedmiot, ktory trzymasz w rece nie posiada"
+      - "&7mozliwosci ulepszenia badz jest ulepszony juz"
+      - "&7na &fmaksymalny &7poziom"
+      - " "
+      - "&7Dostepne przedmioty do ulepszenia:"
+      - "&8» &bDiamentowe uzbrojenie"
+      - "&8» &cNetherytowe uzbrojenie"
 
-kowal-menu-not-upgradeable:
-  material: BARRIER
-  display-name: "&cNiepoprawny przedmiot!"
-  lore:
-    - "&7Przedmiot, ktory trzymasz w rece nie posiada"
-    - "&7mozliwosci ulepszenia badz jest ulepszony juz"
-    - "&7na &fmaksymalny &7poziom"
-    - " "
-    - "&7Dostepne przedmioty do ulepszenia:"
-    - "&8» &bDiamentowe uzbrojenie"
-    - "&8» &cNetherytowe uzbrojenie"
+  confirm:
+    type: HOPPER
+    name: "&8Czy chcesz kontynuowac?"
+    items:
+      1:
+        material: RED_DYE
+        display-name: "&cNIE"
+        lore:
+          - "&7Nie chce ryzykowac. Wole zostac"
+          - "&7przy aktualnym poziomie ulepszenia."
 
-upgrade-status-false: "&cUzbieraj wymagane przedmioty!"
-upgrade-status-true: "&eKliknij, aby ulepszyc!"
+  confirmMetalItem:
+    material: LIME_DYE
+    display-name: "&aTAK"
+    lore:
+      - "&7Szansa na ulepszenie: &f{chance}%"
+      - " "
+      - "&7Jestes swiadomy, ze przy nieudanej"
+      - "&7probie &eulepszenia poziom &7przedmiotu zostanie"
+      - "&7obnizony o jeden."
 
-kowal-confirm-menu:
-  type: HOPPER
-  name: "&8Czy chcesz kontynuowac?"
-  items:
-    1:
-      material: RED_DYE
-      display-name: "&cNIE"
-      lore:
-        - "&7Nie chce ryzykowac. Wole zostac"
-        - "&7przy aktualnym poziomie ulepszenia."
+  confirmKamienItem:
+    material: LIME_DYE
+    display-name: "&aTAK"
+    lore:
+      - "&7Szansa na ulepszenie: &f{chance}%"
+      - " "
+      - "&7Te ulepszenie jest &ezabezpieczone"
+      - "&7przed obnizeniem poziomu przedmiotu."
 
-kowal-confirm-menu-metal-item:
-  material: LIME_DYE
-  display-name: "&aTAK"
-  lore:
-    - "&7Szansa na ulepszenie: &f{chance}%"
-    - " "
-    - "&7Jestes swiadomy, ze przy nieudanej"
-    - "&7probie &eulepszenia poziom &7przedmiotu zostanie zostanie"
-    - "&7obnizony o jeden."
+# Sloty w GUI.
+slots:
+  mode: 22
+  upgradeCancel: 11
+  upgradeItem: 13
+  upgradeAccept: 15
+  confirmCancel: 1
+  confirmAccept: 3
 
-kowal-config-menu-kamien-item:
-  material: LIME_DYE
-  display-name: "&aTAK"
-  lore:
-    - "&7Szansa na ulepszenie: &f{chance}%"
-    - " "
-    - "&7Te ulepszenie jest &ezabezpieczone"
-    - "&7przed obnizeniem poziomu przedmiotu."
+# Teksty widoczne w GUI.
+messages:
+  status:
+    canUpgrade: "&eKliknij, aby ulepszyc!"
+    missingRequirements: "&cUzbieraj wymagane przedmioty!"
+    missingRequirementsMoneyOnly: "&cNie masz wystarczajaco pieniedzy!"
+    missingRequirementsItemsOnly: "&cNie masz wymaganych przedmiotow!"
+    missingRequirementsBoth: "&cBrakuje ci przedmiotow lub pieniedzy!"
+  requirements:
+    # Format linii kosztu w GUI (placeholder {cost}).
+    costLine: "&8» &a{cost}$"
+    itemLineHave: "&8» &a{itemName} x{required}"
+    itemLineMissing: "&8» &c{itemName} x{required}"
+    itemMissingHint: "&cUzbieraj jeszcze &f{missing} &c({itemName})"
+    # Opcjonalne, domyslnie wylaczone: jesli puste/null, nie pokazuj.
+    itemHaveHint: ""
 
-kowal-confirm-menu-cancel-slot: 1
-kowal-confirm-menu-accept-slot: 3
+# Ustawienia ekonomii.
+economy:
+  # Tryb kosztow: MONEY_ONLY, ITEMS_ONLY, MONEY_AND_ITEMS.
+  paymentMode: MONEY_AND_ITEMS
 
-kowal-levels:
-  1:
-    upgrade-items:
-      COAL: 10
-    upgrade-items-lore: "&8» &aWegiel x10"
-    cost-lore: "&8» &a35$"
-    money-upgrade: 35.0
-    display-lore: "&b+0.5 odpornosc na obrazenia"
-    hp-reduce: 0.0015
-    hp-reduce-percent: 0.0
+# Poziomy ulepszen.
+levels:
+  "1":
+    requirements:
+      money: 35.0
+      items:
+        COAL: 10
     chance: 80
-  2:
-    upgrade-items:
-      IRON_INGOT: 8
-    upgrade-items-lore: "&8» &aSztabka zelaza x8"
-    cost-lore: "&8» &a50$"
-    money-upgrade: 50.0
-    display-lore: "&b+1.0 odpornosc na obrazenia"
-    hp-reduce: 0.002
-    hp-reduce-percent: 0.0
+    bonus:
+      displayLore: "&b+0.5 odpornosc na obrazenia"
+      hpReduce: 0.0015
+      hpReducePercent: 0.0
+  "2":
+    requirements:
+      money: 50.0
+      items:
+        IRON_INGOT: 8
     chance: 70
-  3:
-    upgrade-items:
-      STRING: 16
-    upgrade-items-lore: "&8» &aNić x16"
-    cost-lore: "&8» &a75$"
-    money-upgrade: 75.0
-    display-lore: "&b+1.5 odpornosc na obrazenia"
-    hp-reduce: 0.0025
-    hp-reduce-percent: 0.0
+    bonus:
+      displayLore: "&b+1.0 odpornosc na obrazenia"
+      hpReduce: 0.002
+      hpReducePercent: 0.0
+  "3":
+    requirements:
+      money: 75.0
+      items:
+        STRING: 16
     chance: 60
-  4:
-    upgrade-items:
-      EMERALD: 2
-    upgrade-items-lore: "&8» &aEmeraldy x2"
-    cost-lore: "&8» &a90$"
-    money-upgrade: 90.0
-    display-lore: "&b+2.0 odpornosc na obrazenia"
-    hp-reduce: 0.003
-    hp-reduce-percent: 0.0
+    bonus:
+      displayLore: "&b+1.5 odpornosc na obrazenia"
+      hpReduce: 0.0025
+      hpReducePercent: 0.0
+  "4":
+    requirements:
+      money: 90.0
+      items:
+        EMERALD: 2
     chance: 50
-  5:
-    upgrade-items:
-      IRON_INGOT: 16
-    upgrade-items-lore: "&8» &aSztabka zelaza x16"
-    cost-lore: "&8» &a105$"
-    money-upgrade: 105.0
-    display-lore: "&b+3.0 odpornosc na obrazenia"
-    hp-reduce: 0.0035
-    hp-reduce-percent: 0.0
+    bonus:
+      displayLore: "&b+2.0 odpornosc na obrazenia"
+      hpReduce: 0.003
+      hpReducePercent: 0.0
+  "5":
+    requirements:
+      money: 105.0
+      items:
+        IRON_INGOT: 16
     chance: 40
-  6:
-    upgrade-items:
-      EMERALD: 6
-    upgrade-items-lore: "&8» &aEmeraldy x6"
-    cost-lore: "&8» &a120$"
-    money-upgrade: 120.0
-    display-lore: "&b+4.0 odpornosc na obrazenia"
-    hp-reduce: 0.004
-    hp-reduce-percent: 0.0
+    bonus:
+      displayLore: "&b+3.0 odpornosc na obrazenia"
+      hpReduce: 0.0035
+      hpReducePercent: 0.0
+  "6":
+    requirements:
+      money: 120.0
+      items:
+        EMERALD: 6
     chance: 30
-  7:
-    upgrade-items:
-      DIAMOND: 6
-    upgrade-items-lore: "&8» &aDiamenty x6"
-    cost-lore: "&8» &a145$"
-    money-upgrade: 145.0
-    display-lore: "&b+5.0 odpornosc na obrazenia"
-    hp-reduce: 0.0045
-    hp-reduce-percent: 0.0
+    bonus:
+      displayLore: "&b+4.0 odpornosc na obrazenia"
+      hpReduce: 0.004
+      hpReducePercent: 0.0
+  "7":
+    requirements:
+      money: 145.0
+      items:
+        DIAMOND: 6
     chance: 20
+    bonus:
+      displayLore: "&b+5.0 odpornosc na obrazenia"
+      hpReduce: 0.0045
+      hpReducePercent: 0.0
 
-kowal-items-name:
-  DIAMOND_HELMET: "&3Diamentowy helm"
-  DIAMOND_CHESTPLATE: "&3Diamentowa klata"
-  DIAMOND_LEGGINGS: "&3Diamentowe spodnie"
-  DIAMOND_BOOTS: "&3Diamentowe buty"
-  NETHERITE_HELMET: "&cNetherytowy helm"
-  NETHERITE_CHESTPLATE: "&cNetherytowa klata"
-  NETHERITE_LEGGINGS: "&cNetherytowe spodnie"
-  NETHERITE_BOOTS: "&cNetherytowe buty"
+# Ustawienia przedmiotow.
+items:
+  names:
+    DIAMOND_HELMET: "&3Diamentowy helm"
+    DIAMOND_CHESTPLATE: "&3Diamentowa klata"
+    DIAMOND_LEGGINGS: "&3Diamentowe spodnie"
+    DIAMOND_BOOTS: "&3Diamentowe buty"
+    NETHERITE_HELMET: "&cNetherytowy helm"
+    NETHERITE_CHESTPLATE: "&cNetherytowa klata"
+    NETHERITE_LEGGINGS: "&cNetherytowe spodnie"
+    NETHERITE_BOOTS: "&cNetherytowe buty"
+  colors:
+    DIAMOND_HELMET: "&b+{level}"
+    DIAMOND_CHESTPLATE: "&b+{level}"
+    DIAMOND_LEGGINGS: "&b+{level}"
+    DIAMOND_BOOTS: "&b+{level}"
+    NETHERITE_HELMET: "&4+{level}"
+    NETHERITE_CHESTPLATE: "&4+{level}"
+    NETHERITE_LEGGINGS: "&4+{level}"
+    NETHERITE_BOOTS: "&4+{level}"
+  kamienKowalski:
+    material: GRAY_DYE
+    display-name: "&cKamien kowalski"
+    lore:
+      - "&8» &7Powoduje, ze przedmiot po ulepszeniu"
+      - "&8» &7u &fKowala &7nie cofa swojego poziomu w"
+      - "&8» &7przypadku &eniepodowdzenia&7!"
+  kamienKowalskiCustomModelData: 0
 
-kowal-items-colors:
-  DIAMOND_HELMET: "&b+{level}"
-  DIAMOND_CHESTPLATE: "&b+{level}"
-  DIAMOND_LEGGINGS: "&b+{level}"
-  DIAMOND_BOOTS: "&b+{level}"
-  NETHERITE_HELMET: "&4+{level}"
-  NETHERITE_CHESTPLATE: "&4+{level}"
-  NETHERITE_LEGGINGS: "&4+{level}"
-  NETHERITE_BOOTS: "&4+{level}"
+# Efekty losowe na 7 poziomie.
+effects:
+  list:
+    ARMOR_DAMAGE:
+      lore-display: "&6{chance}% wolniejsze niszczenie seta"
+      amplifier-or-chance: 12
+    POTION_DURATION:
+      lore-display: "&9{chance}% wydluzenia efektu wypitych mikstur"
+      amplifier-or-chance: 12
+    DAMAGE:
+      lore-display: "&a{chance}% szansy na odbicie ciosu"
+      amplifier-or-chance: 3
+    ARROW:
+      lore-display: "&d{chance}% szansy na odbicie strzaly"
+      amplifier-or-chance: 10
 
-kamien-kowalski-item:
-  material: GRAY_DYE
-  display-name: "&cKamien kowalski"
-  lore:
-    - "&8» &7Powoduje, ze przedmiot po ulepszeniu"
-    - "&8» &7u &fKowala &7nie cofa swojego poziomu w"
-    - "&8» &7przypadku &eniepodowdzenia&7!"
-kamien-kowalski-custom-model-data: 0
+# Dzwieki ulepszenia.
+sounds:
+  upgradeSuccess: BLOCK_ANVIL_BREAK
+  upgradeFailure: ENTITY_ITEM_BREAK
 
-effect-list:
-  ARMOR_DAMAGE:
-    lore-display: "&6{chance}% wolniejsze niszczenie seta"
-    amplifier-or-chance: 12
-  POTION_DURATION:
-    lore-display: "&9{chance}% wydluzenia efektu wypitych mikstur"
-    amplifier-or-chance: 12
-  DAMAGE:
-    lore-display: "&a{chance}% szansy na odbicie ciosu"
-    amplifier-or-chance: 3
-  ARROW:
-    lore-display: "&d{chance}% szansy na odbicie strzaly"
-    amplifier-or-chance: 10
-
-upgrade-success-sound: BLOCK_ANVIL_BREAK
-upgrade-failure-sound: ENTITY_ITEM_BREAK
+# Casteczki dla pelnego seta.
 particles:
-  - HAPPY_VILLAGER
+  list:
+    - HAPPY_VILLAGER
 
-# Ustawienia integracji Citizens do bypassu auto-equip.
-citizens:
-  enabled: true
-  bypassSetNpcIds:
-    - 12
-  debug: false
-
-# Ustawienia PacketEvents do natychmiastowego resyncu po otwarciu GUI.
-packetEventsSync:
-  enabled: true
-  debug: false
+# Integracje z innymi pluginami.
+integrations:
+  # Ustawienia integracji Citizens do bypassu auto-equip.
+  citizens:
+    enabled: true
+    bypassSetNpcIds:
+      - 12
+    debug: false
+  # Ustawienia PacketEvents do natychmiastowego resyncu po otwarciu GUI.
+  packetEventsSync:
+    enabled: true
+    debug: false

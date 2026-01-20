@@ -6,6 +6,7 @@ import eu.okaeri.configs.schema.GenericsDeclaration;
 import eu.okaeri.configs.serdes.SerializationData;
 import lombok.NonNull;
 import eu.okaeri.configs.serdes.ObjectSerializer;
+import java.util.Map;
 
 public class LevelSerializer implements ObjectSerializer<Level>
 {
@@ -28,14 +29,12 @@ public class LevelSerializer implements ObjectSerializer<Level>
         if (generics == null) {
             throw new NullPointerException("generics is marked non-null but is null");
         }
-        data.add("upgrade-items", object.getUpgradeItems());
-        data.add("upgrade-items-lore", object.getUpgradeItemsLore());
-        data.add("cost-lore", object.getCostLore());
-        data.add("money-upgrade", object.getMoneyUpgrade());
-        data.add("display-lore", object.getItemLoreDisplay());
-        data.add("hp-reduce", object.getHpReduce());
-        data.add("hp-reduce-percent", object.getHpReducePercent());
+        data.add("requirements.items", object.getUpgradeItems());
+        data.add("requirements.money", object.getMoneyUpgrade());
         data.add("chance", object.getChance());
+        data.add("bonus.displayLore", object.getItemLoreDisplay());
+        data.add("bonus.hpReduce", object.getHpReduce());
+        data.add("bonus.hpReducePercent", object.getHpReducePercent());
     }
     
     @Override
@@ -46,16 +45,23 @@ public class LevelSerializer implements ObjectSerializer<Level>
         if (generics == null) {
             throw new NullPointerException("generics is marked non-null but is null");
         }
-        final Double hpReduce = data.get("hp-reduce", Double.class);
-        final Double hpReducePercent = data.get("hp-reduce-percent", Double.class);
+        final Double hpReduce = data.get("bonus.hpReduce", Double.class);
+        final Double hpReducePercent = data.get("bonus.hpReducePercent", Double.class);
+        final Double legacyHpReduce = data.get("hp-reduce", Double.class);
+        final Double legacyHpReducePercent = data.get("hp-reduce-percent", Double.class);
+        final Map<Material, Integer> requirementsItems = data.getAsMap("requirements.items", Material.class, Integer.class);
+        final Double requirementsMoney = data.get("requirements.money", Double.class);
+        final String displayLore = data.get("bonus.displayLore", String.class);
+        final Map<Material, Integer> legacyItems = data.getAsMap("upgrade-items", Material.class, Integer.class);
+        final String legacyDisplayLore = data.get("display-lore", String.class);
         return new Level(
-                data.getAsMap("upgrade-items", Material.class, Integer.class),
+                requirementsItems != null ? requirementsItems : legacyItems,
                 data.get("upgrade-items-lore", String.class),
                 data.get("cost-lore", String.class),
-                data.get("money-upgrade", Double.class),
-                data.get("display-lore", String.class),
-                hpReduce == null ? 0.0 : hpReduce,
-                hpReducePercent == null ? 0.0 : hpReducePercent,
+                requirementsMoney != null ? requirementsMoney : data.get("money-upgrade", Double.class),
+                displayLore != null ? displayLore : legacyDisplayLore,
+                hpReduce != null ? hpReduce : (legacyHpReduce == null ? 0.0 : legacyHpReduce),
+                hpReducePercent != null ? hpReducePercent : (legacyHpReducePercent == null ? 0.0 : legacyHpReducePercent),
                 data.get("chance", Integer.class));
     }
 }
