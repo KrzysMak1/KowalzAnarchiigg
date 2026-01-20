@@ -205,7 +205,9 @@ public class CitizensBypassService {
         player.updateInventory();
         inventory.setHeldItemSlot(inventory.getHeldItemSlot());
         openAction.accept(source.item());
-        this.sendPacketResync(player, heldSlot, source, entry.armorBefore());
+        final Source resolvedSource = source;
+        final ItemStack armorBefore = entry.armorBefore();
+        this.sendPacketResync(player, heldSlot, resolvedSource, armorBefore);
         this.plugin.getServer().getScheduler().runTaskLater(this.plugin, () -> {
             this.logDebug("sync inventory next tick");
             if (this.isAir(inventory.getItem(heldSlot))) {
@@ -214,7 +216,7 @@ public class CitizensBypassService {
             player.updateInventory();
             inventory.setHeldItemSlot(inventory.getHeldItemSlot());
             this.logPacketDebug("PacketEvents: scheduled next-tick resync");
-            this.sendPacketResync(player, heldSlot, source, entry.armorBefore());
+            this.sendPacketResync(player, heldSlot, resolvedSource, armorBefore);
         }, 1L);
     }
 
