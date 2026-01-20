@@ -51,17 +51,19 @@ public class LevelSerializer implements ObjectSerializer<Level>
         final Double legacyHpReducePercent = data.get("hp-reduce-percent", Double.class);
         final Map<Material, Integer> requirementsItems = data.getAsMap("requirements.items", Material.class, Integer.class);
         final Double requirementsMoney = data.get("requirements.money", Double.class);
+        final Double legacyMoneyUpgrade = data.get("money-upgrade", Double.class);
         final String displayLore = data.get("bonus.displayLore", String.class);
         final Map<Material, Integer> legacyItems = data.getAsMap("upgrade-items", Material.class, Integer.class);
         final String legacyDisplayLore = data.get("display-lore", String.class);
+        final Integer chance = data.get("chance", Integer.class);
         return new Level(
                 requirementsItems != null ? requirementsItems : legacyItems,
                 data.get("upgrade-items-lore", String.class),
                 data.get("cost-lore", String.class),
-                requirementsMoney != null ? requirementsMoney : data.get("money-upgrade", Double.class),
+                requirementsMoney != null ? requirementsMoney : (legacyMoneyUpgrade == null ? 0.0 : legacyMoneyUpgrade),
                 displayLore != null ? displayLore : legacyDisplayLore,
                 hpReduce != null ? hpReduce : (legacyHpReduce == null ? 0.0 : legacyHpReduce),
                 hpReducePercent != null ? hpReducePercent : (legacyHpReducePercent == null ? 0.0 : legacyHpReducePercent),
-                data.get("chance", Integer.class));
+                chance == null ? 0 : chance);
     }
 }
