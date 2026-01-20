@@ -153,6 +153,9 @@ public class KowalMenu implements BukkitMenuPlayerSetup
             return true;
         }
         for (final Map.Entry<Material, Integer> entry : level.getUpgradeItems().entrySet()) {
+            if (entry.getKey() == null || entry.getValue() == null || entry.getValue() <= 0) {
+                continue;
+            }
             if (!player.getInventory().containsAtLeast(new ItemStack((Material)entry.getKey()), (int)entry.getValue())) {
                 return false;
             }
@@ -209,6 +212,9 @@ public class KowalMenu implements BukkitMenuPlayerSetup
         if (paymentMode == null || !paymentMode.usesMoney()) {
             return "";
         }
+        if (!level.hasMoneyUpgrade()) {
+            return "";
+        }
         String costLine = level.getCostLore();
         if (costLine == null || costLine.isBlank()) {
             costLine = this.pluginConfig.costLine;
@@ -227,6 +233,9 @@ public class KowalMenu implements BukkitMenuPlayerSetup
         }
         final List<String> lore = new ArrayList<>();
         level.getUpgradeItems().forEach((material, required) -> {
+            if (material == null || required == null || required <= 0) {
+                return;
+            }
             final int have = countItems(player, material);
             final int missing = Math.max(0, required - have);
             final String itemName = humanizeMaterial(material);
@@ -254,6 +263,7 @@ public class KowalMenu implements BukkitMenuPlayerSetup
             return "";
         }
         return level.getUpgradeItems().entrySet().stream()
+                .filter(entry -> entry.getKey() != null && entry.getValue() != null && entry.getValue() > 0)
                 .map(entry -> {
                     final int have = countItems(player, entry.getKey());
                     final int missing = Math.max(0, entry.getValue() - have);
