@@ -240,8 +240,7 @@ sounds:
 
 # Casteczki dla pelnego seta.
 particles:
-  list:
-    - HAPPY_VILLAGER
+  - HAPPY_VILLAGER
 
 # Integracje z innymi pluginami.
 integrations:
