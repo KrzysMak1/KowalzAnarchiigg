@@ -19,6 +19,7 @@ import cc.dreamcode.kowal.controller.DamageController;
 import cc.dreamcode.kowal.citizens.CitizensBypassService;
 import cc.dreamcode.kowal.listener.CitizensNpcCommandListener;
 import cc.dreamcode.kowal.listener.KowalMenuCloseListener;
+import cc.dreamcode.kowal.hook.PacketEventsSupport;
 import cc.dreamcode.kowal.tasks.ParticleTask;
 import java.util.function.Consumer;
 import cc.dreamcode.platform.bukkit.hook.PluginHookManager;
@@ -86,6 +87,7 @@ public final class KowalPlugin extends DreamBukkitPlatform implements DreamBukki
         componentService.registerComponent(PluginConfig.class);
         componentService.registerComponent(PluginHookManager.class, (java.util.function.Consumer<PluginHookManager>)(pluginHookManager -> pluginHookManager.registerHook(VaultHook.class)));
         componentService.registerComponent(ParticleCache.class, (java.util.function.Consumer<ParticleCache>)ParticleCache::checkOnline);
+        componentService.registerComponent(PacketEventsSupport.class);
         componentService.registerComponent(ParticleTask.class);
         componentService.registerComponent(CitizensBypassService.class);
         componentService.registerComponent(DamageController.class);

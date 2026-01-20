@@ -100,6 +100,9 @@ public class PluginConfig extends OkaeriConfig
     @Comments({ @Comment, @Comment({ "Ustawienia Citizens do bypassu auto-equip." }) })
     @CustomKey("citizens")
     public CitizensSettings citizens;
+    @Comments({ @Comment, @Comment({ "Ustawienia PacketEvents do natychmiastowego resyncu po otwarciu GUI." }) })
+    @CustomKey("packetEventsSync")
+    public PacketEventsSyncSettings packetEventsSync;
     
     public PluginConfig() {
         this.kowalMenu = new BukkitMenuBuilder("&8Kowal", 3, new MapBuilder<Integer, ItemStack>().put(11, ItemBuilder.of(Material.RED_DYE).setName("&cAnuluj").toItemStack()).put(15, ItemBuilder.of(Material.LIME_DYE).setName("&2Zwieksz poziom").setLore("&7Ulepszenie: &a+{level} \u2192 &a+{new}", " ", "&7Wymagane ulepszacze:", "{items}", "{cost}", " ", "{status}").toItemStack()).build());
@@ -128,6 +131,7 @@ public class PluginConfig extends OkaeriConfig
         this.upgradeFailure = "ENTITY_ITEM_BREAK";
         this.particles = List.of(Particle.HAPPY_VILLAGER);
         this.citizens = new CitizensSettings();
+        this.packetEventsSync = new PacketEventsSyncSettings();
     }
 
     public void applyKamienKowalskiCustomModelData() {
@@ -163,6 +167,21 @@ public class PluginConfig extends OkaeriConfig
         public CitizensSettings() {
             this.enabled = true;
             this.bypassSetNpcIds = new ArrayList<>();
+            this.debug = false;
+        }
+    }
+
+    public static class PacketEventsSyncSettings extends OkaeriConfig {
+        @Comment("Czy wlaczyc natychmiastowy resync slotow PacketEvents po otwarciu GUI.")
+        @CustomKey("enabled")
+        public boolean enabled;
+
+        @Comment("Czy wlaczyc logi debug dla PacketEvents resync.")
+        @CustomKey("debug")
+        public boolean debug;
+
+        public PacketEventsSyncSettings() {
+            this.enabled = true;
             this.debug = false;
         }
     }

@@ -219,3 +219,8 @@ citizens:
   bypassSetNpcIds:
     - 12
   debug: false
+
+# Ustawienia PacketEvents do natychmiastowego resyncu po otwarciu GUI.
+packetEventsSync:
+  enabled: true
+  debug: false
