@@ -7,6 +7,7 @@ Plugin do systemu ulepszania uzbrojenia dla serwerów Paper.
 - Java 21
 - Paper 1.21.10
 - (Opcjonalnie) Vault + ekonomia do kosztów ulepszeń
+- (Opcjonalnie) PacketEvents – natychmiastowy resync ręki/GUI po otwarciu z NPC
 
 ## Instalacja
 
@@ -33,6 +34,14 @@ Zachowuj klucze konfiguracyjne (nazwy pól) bez zmian, aby zachować kompatybiln
    - `/npc info` lub `/npc list` (zobacz numer ID)
 2. W `config.yml` ustaw listę `citizens.bypassSetNpcIds`, aby włączyć bypass auto-equip dla tych NPC.
 3. Komendę, którą ma wykonywać NPC (np. `/kowal`), przypinasz samodzielnie w Citizens.
+
+### PacketEvents (natychmiastowy resync po otwarciu z NPC)
+
+1. Zainstaluj PacketEvents jako osobny plugin na serwerze.
+2. W `config.yml` upewnij się, że `packetEventsSync.enabled` jest ustawione na `true`.
+3. Opcjonalnie ustaw `packetEventsSync.debug: true`, aby zobaczyć logi resyncu w konsoli.
+
+PacketEvents rozwiązuje desync ręki/GUI po otwarciu menu od NPC (item znika z ręki i pojawia się w GUI bez potrzeby kliknięcia).
 
 ## Komendy
 

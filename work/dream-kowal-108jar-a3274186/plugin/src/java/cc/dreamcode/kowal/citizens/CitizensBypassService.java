@@ -2,6 +2,7 @@ package cc.dreamcode.kowal.citizens;
 
 import cc.dreamcode.kowal.KowalPlugin;
 import cc.dreamcode.kowal.config.PluginConfig;
+import cc.dreamcode.kowal.hook.PacketEventsSupport;
 import cc.dreamcode.kowal.util.UpgradeUtil;
 import cc.dreamcode.utilities.bukkit.nbt.ItemNbtUtil;
 import org.bukkit.plugin.Plugin;
@@ -20,12 +21,18 @@ import java.util.function.Consumer;
 public class CitizensBypassService {
     private static final long BYPASS_DURATION_MS = 1500L;
     private static final long DEBOUNCE_MS = 150L;
+    private static final int HOTBAR_SLOT_OFFSET = 36;
+    private static final int ARMOR_SLOT_HELMET = 5;
+    private static final int ARMOR_SLOT_CHESTPLATE = 6;
+    private static final int ARMOR_SLOT_LEGGINGS = 7;
+    private static final int ARMOR_SLOT_BOOTS = 8;
     private final Map<UUID, BypassEntry> bypassEntries;
     private final Map<UUID, ItemStack> pendingInputs;
     private final Map<UUID, Integer> pendingOriginSlots;
     private final Map<UUID, Boolean> menuOpen;
     private final KowalPlugin plugin;
     private final PluginConfig pluginConfig;
+    private final PacketEventsSupport packetEventsSupport;
 
     public void markBypass(final Player player) {
         if (player == null) {
@@ -198,6 +205,7 @@ public class CitizensBypassService {
         player.updateInventory();
         inventory.setHeldItemSlot(inventory.getHeldItemSlot());
         openAction.accept(source.item());
+        this.sendPacketResync(player, heldSlot, source, entry.armorBefore());
         this.plugin.getServer().getScheduler().runTaskLater(this.plugin, () -> {
             this.logDebug("sync inventory next tick");
             if (this.isAir(inventory.getItem(heldSlot))) {
@@ -205,6 +213,8 @@ public class CitizensBypassService {
             }
             player.updateInventory();
             inventory.setHeldItemSlot(inventory.getHeldItemSlot());
+            this.logPacketDebug("PacketEvents: scheduled next-tick resync");
+            this.sendPacketResync(player, heldSlot, source, entry.armorBefore());
         }, 1L);
     }
 
@@ -300,15 +310,63 @@ public class CitizensBypassService {
         }
     }
 
+    private void logPacketDebug(final String message) {
+        final PluginConfig.PacketEventsSyncSettings packetSettings = this.pluginConfig.packetEventsSync;
+        if (packetSettings != null && packetSettings.debug) {
+            this.plugin.getLogger().info(message);
+        }
+    }
+
+    private void sendPacketResync(final Player player, final int heldSlot, final Source source, final ItemStack armorAfter) {
+        if (!this.packetEventsSupport.isEnabled()) {
+            return;
+        }
+        final int handSlotId = HOTBAR_SLOT_OFFSET + heldSlot;
+        this.logPacketDebug("PacketEvents: sending slot resync for hand slot " + heldSlot + " -> AIR");
+        this.packetEventsSupport.sendSlotResync(player, handSlotId, new ItemStack(Material.AIR));
+        if (source.type() == SourceType.ARMOR) {
+            final int armorSlotId = this.getArmorSlotId(source.armorSlot());
+            if (armorSlotId >= 0) {
+                this.logPacketDebug("PacketEvents: sending armor slot resync " + source.armorSlot() + " -> " + this.describeItem(armorAfter));
+                this.packetEventsSupport.sendSlotResync(player, armorSlotId, armorAfter);
+            }
+        }
+        final Integer windowId = this.packetEventsSupport.getOpenWindowId(player);
+        if (windowId != null) {
+            this.logPacketDebug("PacketEvents: sending GUI slot resync windowId=" + windowId + " slot=" + this.pluginConfig.upgradeItemSlot);
+            this.packetEventsSupport.sendSlotResync(player, windowId, this.pluginConfig.upgradeItemSlot, source.item());
+        }
+    }
+
+    private int getArmorSlotId(final ArmorSlot slot) {
+        if (slot == null) {
+            return -1;
+        }
+        return switch (slot) {
+            case HELMET -> ARMOR_SLOT_HELMET;
+            case CHESTPLATE -> ARMOR_SLOT_CHESTPLATE;
+            case LEGGINGS -> ARMOR_SLOT_LEGGINGS;
+            case BOOTS -> ARMOR_SLOT_BOOTS;
+        };
+    }
+
+    private String describeItem(final ItemStack itemStack) {
+        if (this.isAir(itemStack)) {
+            return "AIR";
+        }
+        return itemStack.getType().name();
+    }
+
     @Inject
     @Generated
-    public CitizensBypassService(final KowalPlugin plugin, final PluginConfig pluginConfig) {
+    public CitizensBypassService(final KowalPlugin plugin, final PluginConfig pluginConfig, final PacketEventsSupport packetEventsSupport) {
         this.bypassEntries = new ConcurrentHashMap<>();
         this.pendingInputs = new ConcurrentHashMap<>();
         this.pendingOriginSlots = new ConcurrentHashMap<>();
         this.menuOpen = new ConcurrentHashMap<>();
         this.plugin = plugin;
         this.pluginConfig = pluginConfig;
+        this.packetEventsSupport = packetEventsSupport;
     }
 
     private enum ArmorSlot {
