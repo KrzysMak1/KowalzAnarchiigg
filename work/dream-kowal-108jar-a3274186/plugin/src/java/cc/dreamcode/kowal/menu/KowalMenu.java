@@ -27,6 +27,7 @@ import cc.dreamcode.kowal.KowalPlugin;
 import cc.dreamcode.kowal.citizens.CitizensBypassService;
 import cc.dreamcode.menu.adventure.setup.BukkitMenuPlayerSetup;
 import cc.dreamcode.kowal.util.UpgradeUtil;
+import cc.dreamcode.kowal.util.MiniMessageUtil;
 import cc.dreamcode.kowal.economy.PaymentMode;
 import java.util.List;
 import java.util.ArrayList;
@@ -68,12 +69,12 @@ public class KowalMenu implements BukkitMenuPlayerSetup
                 || this.pluginConfig.items.names == null
                 || !this.pluginConfig.items.names.containsKey((Object)hand.getType())
                 || currentLevel >= 7) {
-            bukkitMenu.setItem(this.pluginConfig.slots.upgradeItem, ItemBuilder.of(this.pluginConfig.menus.notUpgradeable).fixColors().toItemStack());
+            bukkitMenu.setItem(this.pluginConfig.slots.upgradeItem, MiniMessageUtil.applyItemColors(this.pluginConfig.menus.notUpgradeable).toItemStack());
             return bukkitMenu;
         }
         if (this.mode.equals((Object)KowalMenuMode.METAL)) {
-            bukkitMenu.setItem(this.pluginConfig.slots.mode, ItemBuilder.of(this.pluginConfig.menus.modeMetal).fixColors().toItemStack(), (Consumer<InventoryClickEvent>)(event -> {
-                if (!event.getWhoClicked().getInventory().containsAtLeast(ItemBuilder.of(this.pluginConfig.items.kamienKowalski).fixColors().toItemStack(), 1)) {
+            bukkitMenu.setItem(this.pluginConfig.slots.mode, MiniMessageUtil.applyItemColors(this.pluginConfig.menus.modeMetal).toItemStack(), (Consumer<InventoryClickEvent>)(event -> {
+                if (!event.getWhoClicked().getInventory().containsAtLeast(MiniMessageUtil.applyItemColors(this.pluginConfig.items.kamienKowalski).toItemStack(), 1)) {
                     event.getWhoClicked().closeInventory();
                     this.messageConfig.kamienRequired.send((CommandSender)event.getWhoClicked());
                     return;
@@ -84,24 +85,24 @@ public class KowalMenu implements BukkitMenuPlayerSetup
             }));
         }
         else {
-            bukkitMenu.setItem(this.pluginConfig.slots.mode, ItemBuilder.of(this.pluginConfig.menus.modeKamien).fixColors().toItemStack(), (Consumer<InventoryClickEvent>)(event -> {
+            bukkitMenu.setItem(this.pluginConfig.slots.mode, MiniMessageUtil.applyItemColors(this.pluginConfig.menus.modeKamien).toItemStack(), (Consumer<InventoryClickEvent>)(event -> {
                 this.mode = KowalMenuMode.METAL;
                 this.bypassService.markMenuOpen((Player)event.getWhoClicked());
                 this.build(event.getWhoClicked()).open(event.getWhoClicked());
             }));
         }
         if (this.pluginConfig.levels == null) {
-            bukkitMenu.setItem(this.pluginConfig.slots.upgradeItem, ItemBuilder.of(this.pluginConfig.menus.notUpgradeable).fixColors().toItemStack());
+            bukkitMenu.setItem(this.pluginConfig.slots.upgradeItem, MiniMessageUtil.applyItemColors(this.pluginConfig.menus.notUpgradeable).toItemStack());
             return bukkitMenu;
         }
         final Level level = (Level)this.pluginConfig.levels.get((Object)(currentLevel + 1));
         if (level == null) {
-            bukkitMenu.setItem(this.pluginConfig.slots.upgradeItem, ItemBuilder.of(this.pluginConfig.menus.notUpgradeable).fixColors().toItemStack());
+            bukkitMenu.setItem(this.pluginConfig.slots.upgradeItem, MiniMessageUtil.applyItemColors(this.pluginConfig.menus.notUpgradeable).toItemStack());
             return bukkitMenu;
         }
         builder.getItems().forEach((slot, item) -> {
             if (this.pluginConfig.slots.upgradeCancel == slot) {
-                bukkitMenu.setItem((int)slot, ItemBuilder.of(item).fixColors().toItemStack(), (Consumer<InventoryClickEvent>)(event -> event.getWhoClicked().closeInventory()));
+                bukkitMenu.setItem((int)slot, MiniMessageUtil.applyItemColors(item).toItemStack(), (Consumer<InventoryClickEvent>)(event -> event.getWhoClicked().closeInventory()));
                 return;
             }
             if (this.pluginConfig.slots.upgradeAccept == slot) {
@@ -138,7 +139,7 @@ public class KowalMenu implements BukkitMenuPlayerSetup
                 }));
                 return;
             }
-            bukkitMenu.setItem((int)slot, ItemBuilder.of(item).fixColors().toItemStack());
+            bukkitMenu.setItem((int)slot, MiniMessageUtil.applyItemColors(item).toItemStack());
         });
         final ItemStack inputItem = this.input != null ? this.input : humanEntity.getInventory().getItemInMainHand().clone();
         bukkitMenu.setItem(this.pluginConfig.slots.upgradeItem, inputItem, (Consumer<InventoryClickEvent>)(event -> event.setCancelled(true)));
@@ -182,7 +183,7 @@ public class KowalMenu implements BukkitMenuPlayerSetup
         if (line == null || line.isBlank() || canAfford) {
             return line;
         }
-        return "&c" + COLOR_PATTERN.matcher(line).replaceAll("");
+        return "&c" + COLOR_PATTERN.matcher(MiniMessageUtil.colorize(line)).replaceAll("");
     }
 
     private String resolveStatus(final boolean hasRequiredItems, final boolean hasRequiredMoney, final PaymentMode paymentMode, final String missingItems, final String missingMoney) {
@@ -299,7 +300,7 @@ public class KowalMenu implements BukkitMenuPlayerSetup
         if (meta != null) {
             final String name = meta.getDisplayName();
             if (name != null) {
-                builder.setName(applyPlaceholders(name, placeholders));
+                builder.setName(MiniMessageUtil.colorize(applyPlaceholders(name, placeholders)));
             }
             final List<String> lore = meta.getLore();
             if (lore != null) {
@@ -310,19 +311,19 @@ public class KowalMenu implements BukkitMenuPlayerSetup
                     }
                     if (line.contains("{items}")) {
                         if (!itemsLore.isEmpty()) {
-                            updated.addAll(itemsLore);
+                            updated.addAll(MiniMessageUtil.colorize(itemsLore));
                         }
                         continue;
                     }
                     final String replaced = applyPlaceholders(line, placeholders);
                     if (replaced != null) {
-                        updated.add(replaced);
+                        updated.add(MiniMessageUtil.colorize(replaced));
                     }
                 }
                 builder.setLore(updated);
             }
         }
-        return builder.fixColors();
+        return builder;
     }
 
     private static String applyPlaceholders(final String input, final Map<String, String> placeholders) {
