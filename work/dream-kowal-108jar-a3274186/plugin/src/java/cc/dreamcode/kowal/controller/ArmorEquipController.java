@@ -16,7 +16,7 @@ public class ArmorEquipController implements Listener
     
     @EventHandler(ignoreCancelled = true)
     public void onArmorEquip(final PlayerArmorChangeEvent event) {
-        if (this.isSetItem(event.getOldItem()) || this.isSetItem(event.getNewItem())) {
+        if (!this.isSetItem(event.getOldItem()) && !this.isSetItem(event.getNewItem())) {
             return;
         }
         this.particleCache.check(event.getPlayer());

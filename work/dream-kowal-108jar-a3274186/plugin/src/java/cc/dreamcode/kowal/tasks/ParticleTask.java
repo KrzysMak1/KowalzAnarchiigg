@@ -28,7 +28,7 @@ public class ParticleTask implements Runnable
             if (particle == null) {
                 return;
             }
-            player.getWorld().spawnParticle(particle, player.getLocation().add(0.0, 2.0, 0.0), 4, 0.5, 1.0, 0.5);
+            player.getWorld().spawnParticle(particle, player.getLocation().add(0.0, 0.9, 0.0), 4, 0.4, 0.9, 0.4);
         });
     }
     
