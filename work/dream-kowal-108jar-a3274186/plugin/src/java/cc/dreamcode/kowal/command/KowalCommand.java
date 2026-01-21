@@ -116,10 +116,19 @@ public class KowalCommand implements CommandBase
         final Level found = (Level)this.pluginConfig.levels.get((Object)level);
         final String displayName = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, item, "display-name")
                 .orElse(this.pluginConfig.items.names.get((Object)item.getType()));
+        String baseName = displayName;
+        if (UpgradeUtil.isNetheriteArmor(item.getType())) {
+            final String defaultName = (this.pluginConfig.items != null && this.pluginConfig.items.names != null)
+                    ? (String)this.pluginConfig.items.names.get((Object)item.getType())
+                    : null;
+            if (defaultName != null && !defaultName.isBlank()) {
+                baseName = defaultName;
+            }
+        }
         final String colorSuffix = (this.pluginConfig.items.colors != null)
                 ? (String)this.pluginConfig.items.colors.get((Object)item.getType())
                 : "";
-        final String newName = UpgradeUtil.buildUpgradeName(displayName, colorSuffix, level);
+        final String newName = UpgradeUtil.buildUpgradeName(baseName, colorSuffix, level);
         final ItemBuilder newItem = ItemBuilder.of(item.getType()).setName(newName).setLore(found.getItemLoreDisplay()).withNbt((Plugin)this.plugin, "upgrade-level", String.valueOf(level));
         if (level == 7) {
             final EffectType[] effects = EffectType.values();
