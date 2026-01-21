@@ -27,6 +27,7 @@ import cc.dreamcode.kowal.KowalPlugin;
 import cc.dreamcode.kowal.citizens.CitizensBypassService;
 import cc.dreamcode.menu.adventure.setup.BukkitMenuPlayerSetup;
 import cc.dreamcode.kowal.util.UpgradeUtil;
+import cc.dreamcode.kowal.util.MiniMessageUtil;
 import java.util.Locale;
 import org.bukkit.Sound;
 import cc.dreamcode.kowal.economy.PaymentMode;
@@ -54,7 +55,7 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
         bukkitMenu.setDisposeWhenClose(true);
         builder.getItems().forEach((slot, item) -> {
             if (this.pluginConfig.slots.confirmCancel == slot) {
-                bukkitMenu.setItem((int)slot, ItemBuilder.of(item).fixColors().toItemStack(), (Consumer<InventoryClickEvent>)(event -> {
+                bukkitMenu.setItem((int)slot, MiniMessageUtil.applyItemColors(item).toItemStack(), (Consumer<InventoryClickEvent>)(event -> {
                     final KowalMenu kowalMenu = this.plugin.createInstance(KowalMenu.class);
                     kowalMenu.setMode(this.mode);
                     this.bypassService.markMenuOpen((Player)event.getWhoClicked());
@@ -62,13 +63,13 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
                 }));
                 return;
             }
-            bukkitMenu.setItem((int)slot, ItemBuilder.of(item).fixColors().toItemStack());
+            bukkitMenu.setItem((int)slot, MiniMessageUtil.applyItemColors(item).toItemStack());
         });
         if (this.mode.equals((Object)KowalMenuMode.METAL)) {
-            bukkitMenu.setItem(this.pluginConfig.slots.confirmAccept, ItemBuilder.of(this.pluginConfig.menus.confirmMetalItem).fixColors(Map.of("chance", this.level.getChance())).toItemStack(), (Consumer<InventoryClickEvent>)this::handleClick);
+            bukkitMenu.setItem(this.pluginConfig.slots.confirmAccept, MiniMessageUtil.applyItemColors(this.pluginConfig.menus.confirmMetalItem, Map.of("chance", this.level.getChance())).toItemStack(), (Consumer<InventoryClickEvent>)this::handleClick);
         }
         else {
-            bukkitMenu.setItem(this.pluginConfig.slots.confirmAccept, ItemBuilder.of(this.pluginConfig.menus.confirmKamienItem).fixColors(Map.of("chance", this.level.getChance())).toItemStack(), (Consumer<InventoryClickEvent>)this::handleClick);
+            bukkitMenu.setItem(this.pluginConfig.slots.confirmAccept, MiniMessageUtil.applyItemColors(this.pluginConfig.menus.confirmKamienItem, Map.of("chance", this.level.getChance())).toItemStack(), (Consumer<InventoryClickEvent>)this::handleClick);
         }
         return bukkitMenu;
     }
@@ -107,7 +108,7 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
             this.playConfiguredSound(clicked, this.pluginConfig.sounds.upgradeFailure);
         }
         if (this.mode.equals((Object)KowalMenuMode.KAMIEN_KOWALSKI)) {
-            clicked.getInventory().removeItem(new ItemStack[] { ItemBuilder.of(this.pluginConfig.items.kamienKowalski).setAmount(1).fixColors().toItemStack() });
+            clicked.getInventory().removeItem(new ItemStack[] { MiniMessageUtil.applyItemColors(ItemBuilder.of(this.pluginConfig.items.kamienKowalski).setAmount(1), Map.of()).toItemStack() });
             if (!success) {
                 if (pending != null) {
                     this.bypassService.returnPendingInput(clicked, pending);
@@ -137,11 +138,11 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
                     ? (Effect)this.pluginConfig.effects.list.get((Object)random)
                     : null;
             if (randomEffect != null) {
-                newItem.withNbt((Plugin)this.plugin, "upgrade-effect", random.getData()).appendLore(randomEffect.getLore()).fixColors(Map.of("level", newLevel, "chance", randomEffect.getAmplifierChance()));
+                MiniMessageUtil.applyItemColors(newItem.withNbt((Plugin)this.plugin, "upgrade-effect", random.getData()).appendLore(randomEffect.getLore()), Map.of("level", newLevel, "chance", randomEffect.getAmplifierChance()));
             }
         }
         else {
-            newItem.fixColors(Map.of("level", newLevel));
+            MiniMessageUtil.applyItemColors(newItem, Map.of("level", newLevel));
         }
         final ItemStack upgradedItem = newItem.toItemStack();
         ItemNbtUtil.setValue((Plugin)this.plugin, upgradedItem, "upgrade-level", String.valueOf(newLevel));

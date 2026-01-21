@@ -30,6 +30,7 @@ import cc.dreamcode.kowal.config.PluginConfig;
 import cc.dreamcode.kowal.KowalPlugin;
 import cc.dreamcode.kowal.citizens.CitizensBypassService;
 import cc.dreamcode.kowal.util.UpgradeUtil;
+import cc.dreamcode.kowal.util.MiniMessageUtil;
 import cc.dreamcode.command.annotation.Command;
 import cc.dreamcode.command.CommandBase;
 
@@ -65,7 +66,7 @@ public class KowalCommand implements CommandBase
             this.messageConfig.invalidFormat.send(sender, Map.of("input", "amount"));
             return;
         }
-        final ItemStack kamien = ItemBuilder.of(this.pluginConfig.items.kamienKowalski).setAmount(amount).fixColors().toItemStack();
+        final ItemStack kamien = MiniMessageUtil.applyItemColors(ItemBuilder.of(this.pluginConfig.items.kamienKowalski).setAmount(amount), Map.of()).toItemStack();
         if (target.equals((Object)"all")) {
             this.plugin.getServer().getOnlinePlayers().forEach(player -> {
                 InventoryUtil.giveItem(player, kamien.clone());
@@ -127,11 +128,11 @@ public class KowalCommand implements CommandBase
                     ? (Effect)this.pluginConfig.effects.list.get((Object)random)
                     : null;
             if (randomEffect != null) {
-                newItem.withNbt((Plugin)this.plugin, "upgrade-effect", random.getData()).appendLore(randomEffect.getLore()).fixColors(Map.of("level", level, "chance", randomEffect.getAmplifierChance()));
+                MiniMessageUtil.applyItemColors(newItem.withNbt((Plugin)this.plugin, "upgrade-effect", random.getData()).appendLore(randomEffect.getLore()), Map.of("level", level, "chance", randomEffect.getAmplifierChance()));
             }
         }
         else {
-            newItem.fixColors(Map.of("level", level));
+            MiniMessageUtil.applyItemColors(newItem, Map.of("level", level));
         }
         sender.getInventory().setItemInMainHand(newItem.toItemStack());
         return this.messageConfig.commandUpgradeSuccess.with("level", level);
