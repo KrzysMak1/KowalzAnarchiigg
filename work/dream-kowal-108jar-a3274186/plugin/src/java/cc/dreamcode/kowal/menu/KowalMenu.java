@@ -130,8 +130,17 @@ public class KowalMenu implements BukkitMenuPlayerSetup
                         final KowalConfirmMenu kowalConfirmMenu = this.plugin.createInstance(KowalConfirmMenu.class);
                         kowalConfirmMenu.setLevel(level);
                         kowalConfirmMenu.setMode(this.mode);
-                        if (currentLevel == 0 && hand.hasItemMeta() && hand.getItemMeta().hasDisplayName() && !ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, hand, "display-name").isPresent()) {
-                            ItemNbtUtil.setValue((Plugin)this.plugin, hand, "display-name", StringColorUtil.breakColor(hand.getItemMeta().getDisplayName()));
+                        final ItemStack displaySource = this.input != null
+                                ? player.getInventory().getItemInMainHand()
+                                : hand;
+                        if (currentLevel == 0
+                                && displaySource.hasItemMeta()
+                                && displaySource.getItemMeta().hasDisplayName()
+                                && !ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, displaySource, "display-name").isPresent()) {
+                            ItemNbtUtil.setValue((Plugin)this.plugin, displaySource, "display-name", StringColorUtil.breakColor(displaySource.getItemMeta().getDisplayName()));
+                            if (this.input != null) {
+                                player.getInventory().setItemInMainHand(displaySource);
+                            }
                         }
                         this.bypassService.markMenuOpen(player);
                         kowalConfirmMenu.build(event.getWhoClicked()).open(event.getWhoClicked());
