@@ -183,7 +183,14 @@ public class KowalMenu implements BukkitMenuPlayerSetup
         if (line == null || line.isBlank() || canAfford) {
             return line;
         }
-        return "&c" + COLOR_PATTERN.matcher(MiniMessageUtil.colorize(line)).replaceAll("");
+        final int arrowIndex = line.indexOf("»");
+        if (arrowIndex < 0) {
+            return "&c" + COLOR_PATTERN.matcher(MiniMessageUtil.colorize(line)).replaceAll("");
+        }
+        final String prefix = line.substring(0, arrowIndex + 1);
+        final String suffix = line.substring(arrowIndex + 1);
+        final String strippedSuffix = COLOR_PATTERN.matcher(suffix).replaceAll("");
+        return prefix + "&c" + strippedSuffix;
     }
 
     private String resolveStatus(final boolean hasRequiredItems, final boolean hasRequiredMoney, final PaymentMode paymentMode, final String missingItems, final String missingMoney) {
