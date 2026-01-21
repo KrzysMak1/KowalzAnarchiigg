@@ -117,13 +117,10 @@ public class KowalCommand implements CommandBase
         final String displayName = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, item, "display-name")
                 .orElse(this.pluginConfig.items.names.get((Object)item.getType()));
         String baseName = displayName;
-        if (UpgradeUtil.isNetheriteArmor(item.getType())) {
-            final String defaultName = (this.pluginConfig.items != null && this.pluginConfig.items.names != null)
+        if (baseName == null || baseName.isBlank()) {
+            baseName = (this.pluginConfig.items != null && this.pluginConfig.items.names != null)
                     ? (String)this.pluginConfig.items.names.get((Object)item.getType())
                     : null;
-            if (defaultName != null && !defaultName.isBlank()) {
-                baseName = defaultName;
-            }
         }
         final String colorSuffix = (this.pluginConfig.items.colors != null)
                 ? (String)this.pluginConfig.items.colors.get((Object)item.getType())

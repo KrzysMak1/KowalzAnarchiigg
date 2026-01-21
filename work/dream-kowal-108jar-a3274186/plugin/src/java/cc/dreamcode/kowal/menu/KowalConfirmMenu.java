@@ -98,13 +98,10 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
         final String displayName = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, hand, "display-name")
                 .orElse(this.pluginConfig.items.names.get((Object)hand.getType()));
         String baseName = displayName;
-        if (UpgradeUtil.isNetheriteArmor(hand.getType())) {
-            final String defaultName = (this.pluginConfig.items != null && this.pluginConfig.items.names != null)
+        if (baseName == null || baseName.isBlank()) {
+            baseName = (this.pluginConfig.items != null && this.pluginConfig.items.names != null)
                     ? (String)this.pluginConfig.items.names.get((Object)hand.getType())
                     : null;
-            if (defaultName != null && !defaultName.isBlank()) {
-                baseName = defaultName;
-            }
         }
         final boolean success = RandomUtil.chance(this.level.getChance());
         final int newLevel = success ? (currentLevel + 1) : (currentLevel - 1);
