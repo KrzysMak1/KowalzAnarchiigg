@@ -97,6 +97,15 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
         }
         final String displayName = (String)ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, hand, "display-name")
                 .orElse(this.pluginConfig.items.names.get((Object)hand.getType()));
+        String baseName = displayName;
+        if (UpgradeUtil.isNetheriteArmor(hand.getType())) {
+            final String defaultName = (this.pluginConfig.items != null && this.pluginConfig.items.names != null)
+                    ? (String)this.pluginConfig.items.names.get((Object)hand.getType())
+                    : null;
+            if (defaultName != null && !defaultName.isBlank()) {
+                baseName = defaultName;
+            }
+        }
         final boolean success = RandomUtil.chance(this.level.getChance());
         final int newLevel = success ? (currentLevel + 1) : (currentLevel - 1);
         if (success) {
@@ -129,7 +138,7 @@ public class KowalConfirmMenu implements BukkitMenuPlayerSetup
         final String colorSuffix = (this.pluginConfig.items.colors != null)
                 ? (String)this.pluginConfig.items.colors.get((Object)hand.getType())
                 : "";
-        final String newItemName = UpgradeUtil.buildUpgradeName(displayName, colorSuffix, newLevel);
+        final String newItemName = UpgradeUtil.buildUpgradeName(baseName, colorSuffix, newLevel);
         final ItemBuilder newItem = ItemBuilder.of(hand).setName(newItemName).setLore(success ? currentLore : previousLore).withNbt((Plugin)this.plugin, "upgrade-level", String.valueOf(newLevel));
         if (newLevel >= 7) {
             final EffectType[] effects = EffectType.values();

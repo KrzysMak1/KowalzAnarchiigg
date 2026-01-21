@@ -1,5 +1,7 @@
 package cc.dreamcode.kowal.util;
 
+import org.bukkit.Material;
+
 public final class UpgradeUtil {
     private UpgradeUtil() {
     }
@@ -44,5 +46,20 @@ public final class UpgradeUtil {
             suffix = suffix.replace("{level}", String.valueOf(level));
         }
         return cleaned + " " + suffix;
+    }
+
+    public static boolean isNetheriteArmor(final Material material) {
+        if (material == null) {
+            return false;
+        }
+        switch (material) {
+            case NETHERITE_HELMET:
+            case NETHERITE_CHESTPLATE:
+            case NETHERITE_LEGGINGS:
+            case NETHERITE_BOOTS:
+                return true;
+            default:
+                return false;
+        }
     }
 }
