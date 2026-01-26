@@ -54,105 +54,166 @@ public class KowalMenu implements BukkitMenuPlayerSetup
         if (humanEntity == null) {
             throw new NullPointerException("humanEntity is marked non-null but is null");
         }
-        if (!(humanEntity instanceof Player)) {
-            throw new RuntimeException("humanEntity must be Player");
-        }
-        final Player player = (Player)humanEntity;
+        final Player player = this.requirePlayer(humanEntity);
         final BukkitMenuBuilder builder = this.pluginConfig.menus.kowal;
         final BukkitMenu bukkitMenu = builder.buildEmpty();
         bukkitMenu.setDisposeWhenClose(true);
-        final ItemStack hand = this.input != null ? this.input : humanEntity.getInventory().getItemInMainHand();
-        final Object levelValue = ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, hand, "upgrade-level").orElse("0");
-        final int currentLevel = UpgradeUtil.parseLevel(levelValue);
-        if (hand.getType().equals((Object)Material.AIR)
-                || this.pluginConfig.items == null
-                || this.pluginConfig.items.names == null
-                || !this.pluginConfig.items.names.containsKey((Object)hand.getType())
-                || currentLevel >= 7) {
-            bukkitMenu.setItem(this.pluginConfig.slots.upgradeItem, MiniMessageUtil.applyItemColors(this.pluginConfig.menus.notUpgradeable).toItemStack());
+        final ItemStack hand = this.resolveHandItem(humanEntity);
+        final int currentLevel = this.resolveCurrentLevel(hand);
+
+        if (!this.isUpgradeable(hand, currentLevel)) {
+            this.setNotUpgradeableItem(bukkitMenu);
             return bukkitMenu;
         }
-        if (this.mode.equals((Object)KowalMenuMode.METAL)) {
-            bukkitMenu.setItem(this.pluginConfig.slots.mode, MiniMessageUtil.applyItemColors(this.pluginConfig.menus.modeMetal).toItemStack(), (Consumer<InventoryClickEvent>)(event -> {
-                if (!event.getWhoClicked().getInventory().containsAtLeast(MiniMessageUtil.applyItemColors(this.pluginConfig.items.kamienKowalski).toItemStack(), 1)) {
-                    event.getWhoClicked().closeInventory();
-                    this.messageConfig.kamienRequired.send((CommandSender)event.getWhoClicked());
-                    return;
-                }
-                this.mode = KowalMenuMode.KAMIEN_KOWALSKI;
-                this.bypassService.markMenuOpen((Player)event.getWhoClicked());
-                this.build(event.getWhoClicked()).open(event.getWhoClicked());
-            }));
-        }
-        else {
-            bukkitMenu.setItem(this.pluginConfig.slots.mode, MiniMessageUtil.applyItemColors(this.pluginConfig.menus.modeKamien).toItemStack(), (Consumer<InventoryClickEvent>)(event -> {
-                this.mode = KowalMenuMode.METAL;
-                this.bypassService.markMenuOpen((Player)event.getWhoClicked());
-                this.build(event.getWhoClicked()).open(event.getWhoClicked());
-            }));
-        }
-        if (this.pluginConfig.levels == null) {
-            bukkitMenu.setItem(this.pluginConfig.slots.upgradeItem, MiniMessageUtil.applyItemColors(this.pluginConfig.menus.notUpgradeable).toItemStack());
-            return bukkitMenu;
-        }
-        final Level level = (Level)this.pluginConfig.levels.get((Object)(currentLevel + 1));
+
+        this.setupModeItem(bukkitMenu);
+
+        final Level level = this.resolveNextLevel(currentLevel);
         if (level == null) {
-            bukkitMenu.setItem(this.pluginConfig.slots.upgradeItem, MiniMessageUtil.applyItemColors(this.pluginConfig.menus.notUpgradeable).toItemStack());
+            this.setNotUpgradeableItem(bukkitMenu);
             return bukkitMenu;
         }
+
+        this.setupMenuItems(bukkitMenu, player, level, currentLevel, hand, builder);
+        this.setupUpgradeItemSlot(bukkitMenu, humanEntity);
+        return bukkitMenu;
+    }
+
+    private Player requirePlayer(final HumanEntity humanEntity) {
+        if (!(humanEntity instanceof Player)) {
+            throw new RuntimeException("humanEntity must be Player");
+        }
+        return (Player) humanEntity;
+    }
+
+    private ItemStack resolveHandItem(final HumanEntity humanEntity) {
+        return this.input != null ? this.input : humanEntity.getInventory().getItemInMainHand();
+    }
+
+    private int resolveCurrentLevel(final ItemStack itemStack) {
+        final Object levelValue = ItemNbtUtil.getValueByPlugin((Plugin) this.plugin, itemStack, "upgrade-level").orElse("0");
+        return UpgradeUtil.parseLevel(levelValue);
+    }
+
+    private boolean isUpgradeable(final ItemStack itemStack, final int currentLevel) {
+        if (itemStack.getType().equals((Object) Material.AIR)) {
+            return false;
+        }
+        if (this.pluginConfig.items == null || this.pluginConfig.items.names == null) {
+            return false;
+        }
+        return this.pluginConfig.items.names.containsKey((Object) itemStack.getType()) && currentLevel < 7;
+    }
+
+    private void setNotUpgradeableItem(final BukkitMenu bukkitMenu) {
+        bukkitMenu.setItem(this.pluginConfig.slots.upgradeItem,
+                MiniMessageUtil.applyItemColors(this.pluginConfig.menus.notUpgradeable).toItemStack());
+    }
+
+    private void setupModeItem(final BukkitMenu bukkitMenu) {
+        if (this.mode.equals((Object) KowalMenuMode.METAL)) {
+            bukkitMenu.setItem(this.pluginConfig.slots.mode,
+                    MiniMessageUtil.applyItemColors(this.pluginConfig.menus.modeMetal).toItemStack(),
+                    (Consumer<InventoryClickEvent>) (event -> {
+                        if (!event.getWhoClicked().getInventory().containsAtLeast(
+                                MiniMessageUtil.applyItemColors(this.pluginConfig.items.kamienKowalski).toItemStack(), 1)) {
+                            event.getWhoClicked().closeInventory();
+                            this.messageConfig.kamienRequired.send((CommandSender) event.getWhoClicked());
+                            return;
+                        }
+                        this.mode = KowalMenuMode.KAMIEN_KOWALSKI;
+                        this.bypassService.markMenuOpen((Player) event.getWhoClicked());
+                        this.build(event.getWhoClicked()).open(event.getWhoClicked());
+                    }));
+            return;
+        }
+        bukkitMenu.setItem(this.pluginConfig.slots.mode,
+                MiniMessageUtil.applyItemColors(this.pluginConfig.menus.modeKamien).toItemStack(),
+                (Consumer<InventoryClickEvent>) (event -> {
+                    this.mode = KowalMenuMode.METAL;
+                    this.bypassService.markMenuOpen((Player) event.getWhoClicked());
+                    this.build(event.getWhoClicked()).open(event.getWhoClicked());
+                }));
+    }
+
+    private Level resolveNextLevel(final int currentLevel) {
+        if (this.pluginConfig.levels == null) {
+            return null;
+        }
+        return (Level) this.pluginConfig.levels.get((Object) (currentLevel + 1));
+    }
+
+    private void setupMenuItems(final BukkitMenu bukkitMenu, final Player player, final Level level, final int currentLevel,
+                                final ItemStack hand, final BukkitMenuBuilder builder) {
         builder.getItems().forEach((slot, item) -> {
             if (this.pluginConfig.slots.upgradeCancel == slot) {
-                bukkitMenu.setItem((int)slot, MiniMessageUtil.applyItemColors(item).toItemStack(), (Consumer<InventoryClickEvent>)(event -> event.getWhoClicked().closeInventory()));
+                bukkitMenu.setItem((int) slot, MiniMessageUtil.applyItemColors(item).toItemStack(),
+                        (Consumer<InventoryClickEvent>) (event -> event.getWhoClicked().closeInventory()));
                 return;
             }
             if (this.pluginConfig.slots.upgradeAccept == slot) {
-                final PaymentMode paymentMode = this.pluginConfig.resolvePaymentMode(this.plugin.getLogger());
-                final boolean hasRequiredItems = this.hasRequiredItems(player, level, paymentMode);
-                final boolean hasRequiredMoney = this.hasRequiredMoney(player, level, paymentMode);
-                final String missingItems = this.buildMissingItems(player, level, paymentMode);
-                final String missingMoney = this.buildMissingMoney(player, level, paymentMode);
-                final String status = this.resolveStatus(hasRequiredItems, hasRequiredMoney, paymentMode, missingItems, missingMoney);
-                final String costLine = this.buildCostLine(level, paymentMode, hasRequiredMoney);
-                final List<String> itemsLore = this.buildRequirementsLore(player, level, paymentMode);
-                final Map<String, String> placeholders = Map.of(
-                        "level", String.valueOf(currentLevel),
-                        "new", String.valueOf(currentLevel + 1),
-                        "cost", costLine == null ? "" : costLine,
-                        "status", status == null ? "" : status,
-                        "missingItems", missingItems,
-                        "missingMoney", missingMoney);
-                bukkitMenu.setItem((int)slot, this.applyUpgradePlaceholders(item, placeholders, itemsLore).toItemStack(), (Consumer<InventoryClickEvent>)(event -> {
-                    if (!this.canAfford(player, level, paymentMode)) {
-                        player.closeInventory();
-                        this.messageConfig.cannotAfford.send((CommandSender)player);
-                    }
-                    else {
-                        final KowalConfirmMenu kowalConfirmMenu = this.plugin.createInstance(KowalConfirmMenu.class);
-                        kowalConfirmMenu.setLevel(level);
-                        kowalConfirmMenu.setMode(this.mode);
-                        final ItemStack displaySource = this.input != null
-                                ? player.getInventory().getItemInMainHand()
-                                : hand;
-                        if (currentLevel == 0
-                                && displaySource.hasItemMeta()
-                                && displaySource.getItemMeta().hasDisplayName()
-                                && !ItemNbtUtil.getValueByPlugin((Plugin)this.plugin, displaySource, "display-name").isPresent()) {
-                            ItemNbtUtil.setValue((Plugin)this.plugin, displaySource, "display-name", StringColorUtil.breakColor(displaySource.getItemMeta().getDisplayName()));
-                            if (this.input != null) {
-                                player.getInventory().setItemInMainHand(displaySource);
-                            }
-                        }
-                        this.bypassService.markMenuOpen(player);
-                        kowalConfirmMenu.build(event.getWhoClicked()).open(event.getWhoClicked());
-                    }
-                }));
+                this.setupAcceptItem(bukkitMenu, player, level, currentLevel, hand, slot, item);
                 return;
             }
-            bukkitMenu.setItem((int)slot, MiniMessageUtil.applyItemColors(item).toItemStack());
+            bukkitMenu.setItem((int) slot, MiniMessageUtil.applyItemColors(item).toItemStack());
         });
-        final ItemStack inputItem = this.input != null ? this.input : humanEntity.getInventory().getItemInMainHand().clone();
-        bukkitMenu.setItem(this.pluginConfig.slots.upgradeItem, inputItem, (Consumer<InventoryClickEvent>)(event -> event.setCancelled(true)));
-        return bukkitMenu;
+    }
+
+    private void setupAcceptItem(final BukkitMenu bukkitMenu, final Player player, final Level level, final int currentLevel,
+                                 final ItemStack hand, final int slot, final ItemStack item) {
+        final PaymentMode paymentMode = this.pluginConfig.resolvePaymentMode(this.plugin.getLogger());
+        final boolean hasRequiredItems = this.hasRequiredItems(player, level, paymentMode);
+        final boolean hasRequiredMoney = this.hasRequiredMoney(player, level, paymentMode);
+        final String missingItems = this.buildMissingItems(player, level, paymentMode);
+        final String missingMoney = this.buildMissingMoney(player, level, paymentMode);
+        final String status = this.resolveStatus(hasRequiredItems, hasRequiredMoney, paymentMode, missingItems, missingMoney);
+        final String costLine = this.buildCostLine(level, paymentMode, hasRequiredMoney);
+        final List<String> itemsLore = this.buildRequirementsLore(player, level, paymentMode);
+        final Map<String, String> placeholders = Map.of(
+                "level", String.valueOf(currentLevel),
+                "new", String.valueOf(currentLevel + 1),
+                "cost", costLine == null ? "" : costLine,
+                "status", status == null ? "" : status,
+                "missingItems", missingItems,
+                "missingMoney", missingMoney);
+        bukkitMenu.setItem(slot, this.applyUpgradePlaceholders(item, placeholders, itemsLore).toItemStack(),
+                (Consumer<InventoryClickEvent>) (event -> {
+                    if (!this.canAfford(player, level, paymentMode)) {
+                        player.closeInventory();
+                        this.messageConfig.cannotAfford.send((CommandSender) player);
+                        return;
+                    }
+                    final KowalConfirmMenu kowalConfirmMenu = this.plugin.createInstance(KowalConfirmMenu.class);
+                    kowalConfirmMenu.setLevel(level);
+                    kowalConfirmMenu.setMode(this.mode);
+                    final ItemStack displaySource = this.input != null
+                            ? player.getInventory().getItemInMainHand()
+                            : hand;
+                    if (this.shouldCacheDisplayName(displaySource, currentLevel)) {
+                        ItemNbtUtil.setValue((Plugin) this.plugin, displaySource, "display-name",
+                                StringColorUtil.breakColor(displaySource.getItemMeta().getDisplayName()));
+                        if (this.input != null) {
+                            player.getInventory().setItemInMainHand(displaySource);
+                        }
+                    }
+                    this.bypassService.markMenuOpen(player);
+                    kowalConfirmMenu.build(event.getWhoClicked()).open(event.getWhoClicked());
+                }));
+    }
+
+    private boolean shouldCacheDisplayName(final ItemStack displaySource, final int currentLevel) {
+        return currentLevel == 0
+                && displaySource.hasItemMeta()
+                && displaySource.getItemMeta().hasDisplayName()
+                && !ItemNbtUtil.getValueByPlugin((Plugin) this.plugin, displaySource, "display-name").isPresent();
+    }
+
+    private void setupUpgradeItemSlot(final BukkitMenu bukkitMenu, final HumanEntity humanEntity) {
+        final ItemStack inputItem = this.input != null
+                ? this.input
+                : humanEntity.getInventory().getItemInMainHand().clone();
+        bukkitMenu.setItem(this.pluginConfig.slots.upgradeItem, inputItem,
+                (Consumer<InventoryClickEvent>) (event -> event.setCancelled(true)));
     }
     
     private boolean canAfford(final Player player, final Level level, final PaymentMode paymentMode) {
@@ -184,7 +245,7 @@ public class KowalMenu implements BukkitMenuPlayerSetup
         if (!level.hasMoneyUpgrade()) {
             return true;
         }
-        final double money = (double)this.pluginHookManager.get(VaultHook.class).map(vaultHook -> (Double)vaultHook.getMoney(player).orElse(0.0)).orElse(0.0);
+        final double money = this.getPlayerMoney(player);
         return money >= level.getMoneyUpgrade();
     }
 
@@ -305,9 +366,15 @@ public class KowalMenu implements BukkitMenuPlayerSetup
         if (paymentMode == null || !paymentMode.usesMoney() || !level.hasMoneyUpgrade()) {
             return "";
         }
-        final double money = (double)this.pluginHookManager.get(VaultHook.class).map(vaultHook -> (Double)vaultHook.getMoney(player).orElse(0.0)).orElse(0.0);
+        final double money = this.getPlayerMoney(player);
         final double missing = Math.max(0.0, level.getMoneyUpgrade() - money);
         return formatMoney(missing);
+    }
+
+    private double getPlayerMoney(final Player player) {
+        return (double) this.pluginHookManager.get(VaultHook.class)
+                .map(vaultHook -> (Double) vaultHook.getMoney(player).orElse(0.0))
+                .orElse(0.0);
     }
 
     private ItemBuilder applyUpgradePlaceholders(final ItemStack item, final Map<String, String> placeholders, final List<String> itemsLore) {
